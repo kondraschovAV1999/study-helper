@@ -1,14 +1,45 @@
 // app.page.tsx -- Root page @ /
+// This is the main entry point for the app. It contains the landing page and the main content of the app.
 import Link from "next/link";
 import { BookOpen, FileText, ClipboardList, Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { LandingHeader } from "@/components/landing-header"
+import { FeatureCard } from "@/components/feature-card";
+
+const FEATURES = [
+  {
+    icon: <BookOpen className="w-6 h-6 text-primary" />,
+    title: "Study Guides",
+    features: [
+      "AI-generated custom study guides from your uploads",
+      "Key points organized for clarity and focus",
+      "Edit, expand, or simplify — your way"
+    ]
+  },
+  {
+    icon: <FileText className="w-6 h-6 text-primary" />,
+    title: "Flashcards",
+    features: [
+      "Master topics faster with flashcards",
+      "Spaced repetition just for you",
+      "Generated from your own study materials"
+    ]
+  },
+  {
+    icon: <ClipboardList className="w-6 h-6 text-primary" />,
+    title: "Practice Tests",
+    features: [
+      "Ace your exams with practice tests",
+      "Get personalized difficulty adjustments",
+      "Instant feedback with concept"
+    ]
+  }
+];
 
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Create & Log in header */}
+      {/* Create & Log in header using landing-header component*/}
       <LandingHeader/>
 
       {/* Main Content*/}
@@ -22,87 +53,20 @@ export default function Home() {
               Master whatever you're learning with AI-powered flashcards, practice tests, and personalized study activities.
             </p>
             <div className="flex justify-center gap-4">
-              <Link href="/auth?signup=true">
-                <Button size="lg">Sign up for free</Button>
+              <Link href="/login">
+                <Button size="lg" className="text-base">
+                  Sign up for free
+                </Button>
               </Link>
             </div>
         </section>
 
-        {/* Features Section */}
+        {/* Features Section using feature-card component*/}
         <section className="py-16 px-4 w-full">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            {/* Study Guides Card */}
-            <Card className="hover:shadow-lg transition-shadow h-full">
-              <CardHeader>
-                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto">
-                  <BookOpen className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-semibold text-center">Study Guides</h3>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
-                  <p>AI-generated custom study guides from your uploads</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
-                  <p>Key points organized for clarity and focus</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
-                  <p>Edit, expand, or simplify — your way</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Flashcards Card */}
-            <Card className="hover:shadow-lg transition-shadow h-full">
-              <CardHeader>
-                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto">
-                  <FileText className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-semibold text-center">Flashcards</h3>
-              </CardHeader>
-              <CardContent className="space-y-4">
-              <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
-                  <p>Master topics faster with flashcards</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
-                  <p>Spaced reptition just for you</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
-                  <p>Generated from your own study materials</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Practice Tests Card */}
-            <Card className="hover:shadow-lg transition-shadow h-full">
-              <CardHeader>
-                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto">
-                  <ClipboardList className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-semibold text-center">Practice Tests</h3>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
-                  <p>Ace your exams with practice tests</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
-                  <p>Get personalized difficulty adjustments</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 mt-0.5 text-primary flex-shrink-0" />
-                  <p>Instant feedback with concept</p>
-                </div>
-              </CardContent>
-            </Card>
+            {FEATURES.map((feature, index) => (
+              <FeatureCard key={index} {...feature} />
+            ))}
           </div>
         </section>
 
@@ -115,8 +79,8 @@ export default function Home() {
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
               Create your own study materials or let our AI generate them for you. Study anytime, anywhere with your personal learning companion.
             </p>
-            <Link href="/auth">
-              <Button size="lg" className="gap-2">
+            <Link href="/login">
+              <Button size="lg" className="text-base gap-2">
                 Get Started
                 <Sparkles className="w-5 h-5" />
               </Button>
