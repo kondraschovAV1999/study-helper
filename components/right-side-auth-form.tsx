@@ -16,7 +16,7 @@ export function RightSideAuthForm() {
       <div className="flex justify-center space-x-20 mb-10">
         <button
           onClick={() => setActiveForm('login')}
-          className={`w-48 py-4 text-xl font-medium rounded-lg transition-all ${
+          className={`w-48 py-3 text-lg font-medium rounded-lg transition-all ${
             activeForm === 'login'
               ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90'
               : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -26,7 +26,7 @@ export function RightSideAuthForm() {
         </button>
         <button
           onClick={() => setActiveForm('signup')}
-          className={`w-48 py-4 text-xl font-medium rounded-lg transition-all ${
+          className={`w-48 py-3 text-lg font-medium rounded-lg transition-all ${
             activeForm === 'signup'
               ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90'
               : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'

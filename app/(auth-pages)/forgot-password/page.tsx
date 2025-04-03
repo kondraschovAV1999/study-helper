@@ -4,7 +4,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { SmtpMessage } from "../smtp-message";
+
 
 export default async function ForgotPassword(props: {
   searchParams: Promise<Message>;
@@ -55,11 +55,6 @@ export default async function ForgotPassword(props: {
             </Link>
           </p>
         </form>
-      </div>
-      
-      {/* SMTP message moved inside card for better visual grouping */}
-      <div className="mt-6">
-        <SmtpMessage />
       </div>
     </div>
   );
