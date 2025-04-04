@@ -4,7 +4,6 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Message } from "@/components/form-message";
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
@@ -13,11 +12,11 @@ export async function signUpAction(formData: FormData) {
   const confirmPassword = formData.get("confirmPassword") as string;
 
   if (!email || !password) {
-    return { error: "Email and password are required" } as Message;
+    throw new Error("Email and password are required");
   }
 
   if (password !== confirmPassword) {
-    return { error: "Passwords do not match" } as Message;
+    throw new Error("Passwords do not match");
   }
 
   try {
@@ -28,7 +27,7 @@ export async function signUpAction(formData: FormData) {
 
     if (authError) {
       console.error("Auth error:", authError);
-      return { error: authError.message } as Message;
+      throw new Error(authError.message);
     }
 
     if (authData.user) {
@@ -40,10 +39,10 @@ export async function signUpAction(formData: FormData) {
     }
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" } as Message;
+    throw new Error("An unexpected error occurred");
   }
 
-  return { error: "Something went wrong" } as Message;
+  throw new Error("Something went wrong");
 }
 
 export async function signInAction(formData: FormData) {
@@ -57,10 +56,10 @@ export async function signInAction(formData: FormData) {
   });
 
   if (error) {
-    return { error: error.message } as Message;
+    throw new Error(error.message);
   }
 
-  return redirect("/protected");
+  redirect("/protected");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/submit-button";
 import Link from "next/link";
 import { AuthFormHandler } from "./auth-form-handler";
+import { signInAction } from "@/app/actions";
 
 interface SigninFormProps {
   switchToSignup: () => void;
@@ -15,7 +16,7 @@ interface SigninFormProps {
 {/* The switchToSignup function is passed as a prop to switch to the signup form when needed */}
 export function SignInForm({ switchToSignup }: SigninFormProps) {
   return (
-    <AuthFormHandler type="signin">
+    <AuthFormHandler action={signInAction}>
       <div className="space-y-6 p-10 bg-background rounded-xl shadow-lg border">
         <h2 className="text-4xl font-bold text-center">Sign In</h2>
 

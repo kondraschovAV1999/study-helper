@@ -1,35 +1,34 @@
 "use client";
 
-import { signInAction, signUpAction } from "@/app/actions";
 import { useState } from "react";
 
 interface AuthFormHandlerProps {
-  type: "signin" | "signup";
+  action: (formData: FormData) => Promise<void>;
   children: React.ReactNode;
 }
 
-export function AuthFormHandler({ type, children }: AuthFormHandlerProps) {
+export function AuthFormHandler({ action, children }: AuthFormHandlerProps) {
   const [error, setError] = useState<string>("");
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = (formData: FormData) => {
     setError("");
 
     // Client-side password validation for signup
-    if (type === "signup") {
-      const password = formData.get("password") as string;
-      const confirmPassword = formData.get("confirmPassword") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
 
-      if (password !== confirmPassword) {
-        setError("Passwords do not match");
-        return;
+    if (confirmPassword && password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    return action(formData).catch((err) => {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred");
       }
-    }
-
-    const action = type === "signin" ? signInAction : signUpAction;
-    const result = await action(formData);
-    if (typeof result === 'string') {
-      window.location.href = result;
-    }
+    });
   };
 
   return (
@@ -42,4 +41,4 @@ export function AuthFormHandler({ type, children }: AuthFormHandlerProps) {
       {children}
     </form>
   );
-} 
+}
