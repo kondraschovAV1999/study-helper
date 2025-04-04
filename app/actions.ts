@@ -4,45 +4,52 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Message } from "@/components/form-message";
 
-export const signUpAction = async (formData: FormData) => {
-  const email = formData.get("email")?.toString();
-  const password = formData.get("password")?.toString();
+export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
-  const origin = (await headers()).get("origin");
-
-  if (!email || !password) {
-    return encodedRedirect(
-      "error",
-      "/sign-up",
-      "Email and password are required",
-    );
-  }
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: `${origin}/auth/callback`,
-    },
-  });
-
-  if (error) {
-    console.error(error.code + " " + error.message);
-    return encodedRedirect("error", "/sign-up", error.message);
-  } else {
-    return encodedRedirect(
-      "success",
-      "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
-    );
-  }
-};
-
-export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (!email || !password) {
+    return { error: "Email and password are required" } as Message;
+  }
+
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match" } as Message;
+  }
+
+  try {
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (authError) {
+      console.error("Auth error:", authError);
+      return { error: authError.message } as Message;
+    }
+
+    if (authData.user) {
+      return encodedRedirect(
+        "success",
+        "/login",
+        "Thanks for signing up! Please check your email for a verification link."
+      );
+    }
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return { error: "An unexpected error occurred" } as Message;
+  }
+
+  return { error: "Something went wrong" } as Message;
+}
+
+export async function signInAction(formData: FormData) {
   const supabase = await createClient();
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -50,7 +57,7 @@ export const signInAction = async (formData: FormData) => {
   });
 
   if (error) {
-    return encodedRedirect("error", "/sign-in", error.message);
+    return { error: error.message } as Message;
   }
 
   return redirect("/protected");
@@ -130,5 +137,5 @@ export const resetPasswordAction = async (formData: FormData) => {
 export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  return redirect("/sign-in");
+  return redirect("/login");
 };

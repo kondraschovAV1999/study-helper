@@ -1,23 +1,25 @@
 {/* This component is used in the RightSideAuthForm component to render the sign-up form. */}
 {/* Signup form is available via toggle buttons in the RightSideAuthForm component */}
 
-import Link from 'next/link';
+import { signInAction } from "@/app/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/submit-button";
+import Link from "next/link";
 
-
-interface LoginFormProps {
+interface SigninFormProps {
   switchToSignup: () => void;
 }
 
 {/* Form Fields for logging in */}
 {/* The switchToSignup function is passed as a prop to switch to the signup form when needed */}
-export function LoginForm({ switchToSignup }: LoginFormProps) {
+export function SignInForm({ switchToSignup }: SigninFormProps) {
   return (
-    <div className="space-y-6 p-10 bg-background rounded-xl shadow-lg border">
-      <h2 className="text-4xl font-bold text-center">Login</h2>
-      
+    <form action={async (formData) => {
+      await signInAction(formData);
+    }} className="space-y-6 p-10 bg-background rounded-xl shadow-lg border">
+      <h2 className="text-4xl font-bold text-center">Sign In</h2>
+
       {/* Email */}
       <div className="space-y-6">
         <div>
@@ -68,21 +70,22 @@ export function LoginForm({ switchToSignup }: LoginFormProps) {
     {/* Submit Button */}
     <SubmitButton 
         className="w-full py-6 px-6 text-xl font-medium rounded-lg shadow-md transition-colors mt-6"
-        pendingText="Logging in..."
+        pendingText="Signing in..."
         >
-        Login
+        Sign In
     </SubmitButton>
 
         {/* Switch to Signup */}
       <p className="text-center text-base text-muted-foreground mt-6">
         New to our platform?{' '}
         <button 
+          type="button"
           onClick={switchToSignup}
           className="text-primary hover:underline font-medium"
         >
-          Create an account
+          Sign Up
         </button>
       </p>
-    </div>
+    </form>
   );
 }

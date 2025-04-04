@@ -1,19 +1,25 @@
 {/* This component is used in the RightSideAuthForm component to render the sign-up form. */}
 {/* Signup form is available via toggle buttons in the RightSideAuthForm component */}
 
+import { signUpAction } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 interface SignUpFormProps {
-  switchToLogin: () => void;
+  switchToSignin: () => void;
 }
 
 {/* Form Fields for signing up */}
-{/* The switchToLogin function is passed as a prop to switch to the login form when needed */}
-export function SignUpForm({ switchToLogin }: SignUpFormProps) {
+{/* The switchToSignin function is passed as a prop to switch to the login form when needed */}
+export function SignUpForm({ switchToSignin }: SignUpFormProps) {
   return (
-    <div className="space-y-6 p-10 bg-background rounded-xl shadow-lg border">
+    <form action={async (formData) => {
+      const result = await signUpAction(formData);
+      if (typeof result === 'string') {
+        window.location.href = result;
+      }
+    }} className="space-y-6 p-10 bg-background rounded-xl shadow-lg border">
       <h2 className="text-4xl font-bold text-center">Sign up</h2>
 
       {/* First name & lastname fields*/}
@@ -91,63 +97,63 @@ export function SignUpForm({ switchToLogin }: SignUpFormProps) {
 
         {/* Email */}
         <div>
-        <Label className="block text-lg font-medium mb-2">Email</Label>
-        <Input
+          <Label className="block text-lg font-medium mb-2">Email</Label>
+          <Input
             name="email"
             type="email"
             placeholder="Enter your email address"
             className="w-full bg-secondary border rounded-lg p-6 text-lg focus:ring-2 focus:ring-primary"
             required
-        />
+          />
         </div>
 
         {/* Password */}
         <div>
-        <Label className="block text-lg font-medium mb-2">Password</Label>
-        <Input
+          <Label className="block text-lg font-medium mb-2">Password</Label>
+          <Input
             name="password"
             type="password"
             placeholder="Enter your password"
             className="w-full bg-secondary border rounded-lg p-6 text-lg focus:ring-2 focus:ring-primary"
             autoComplete="new-password"
             required
-        />
+          />
         </div>
 
         {/* Confirm Password */}
         <div>
-        <Label className="block text-lg font-medium mb-2">Confirm Password</Label>
-        <Input
+          <Label className="block text-lg font-medium mb-2">Confirm Password</Label>
+          <Input
             name="confirmPassword"
             type="password"
             placeholder="Confirm your password"
             className="w-full bg-secondary border rounded-lg p-6 text-lg focus:ring-2 focus:ring-primary"
             autoComplete="new-password"
             required
-        />
+          />
         </div>
-    </div>
+      </div>
 
-    {/* Submit Button */}
-    <SubmitButton 
+      {/* Submit Button */}
+      <SubmitButton 
         className="w-full py-6 px-6 text-xl font-medium rounded-lg shadow-md transition-colors mt-6"
         pendingText="Creating account..."
-        >
+      >
         Create Account
-    </SubmitButton>
+      </SubmitButton>
       
 
-    {/* Switch to Login */}
-    <p className="text-center text-base text-muted-foreground mt-6">
+      {/* Switch to Login */}
+      <p className="text-center text-base text-muted-foreground mt-6">
         Already have an account?{" "}
         <button
-        type="button"
-        onClick={switchToLogin}
-        className="text-primary hover:underline font-medium"
+          type="button"
+          onClick={switchToSignin}
+          className="text-primary hover:underline font-medium"
         >
-        Log in
+          Sign In
         </button>
-    </p>
-    </div>
-);
+      </p>
+    </form>
+  );
 }
