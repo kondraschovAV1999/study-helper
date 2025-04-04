@@ -23,6 +23,9 @@ export function AuthFormHandler({ action, children }: AuthFormHandlerProps) {
     }
 
     return action(formData).catch((err) => {
+      if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
+        return;
+      }
       if (err instanceof Error) {
         setError(err.message);
       } else {

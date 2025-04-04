@@ -59,8 +59,12 @@ export async function signInAction(formData: FormData) {
     throw new Error(error.message);
   }
 
-  redirect("/protected");
-};
+  return encodedRedirect(
+    "success",
+    "/protected",
+    "Successfully signed in!"
+  );
+}
 
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
