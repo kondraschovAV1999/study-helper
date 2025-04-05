@@ -24,6 +24,7 @@ interface SignUpFormProps {
 }
 export function SignUpForm({ switchToSignin }: SignUpFormProps) {
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,20 +33,32 @@ export function SignUpForm({ switchToSignin }: SignUpFormProps) {
     const password = formData.get("password")?.toString();
     const confirmPassword = formData.get("confirmPassword")?.toString();
 
+    const email = formData.get("email")as string;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
     const result = await signUpAction(formData);
-    if (result && result.success === false) {
+    if (result?.success === false) {
       setError(result.message);
+    } else if (result?.success === true) {
+      setError("");
+      setSuccess(result.message);
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-6 p-10 bg-background rounded-xl shadow-lg border">
+        {error && <p className="text-red-600">{error}</p>}
+        {success && <p className="text-green-600">{success}</p>}
         <h2 className="text-4xl font-bold text-center">Sign up</h2>
 
         {/* First name & lastname fields*/}
@@ -179,7 +192,6 @@ export function SignUpForm({ switchToSignin }: SignUpFormProps) {
             />
           </div>
         </div>
-        {error && <p className="text-red-600">{error}</p>}
 
         {/* Submit Button */}
         <SubmitButton

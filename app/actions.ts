@@ -61,11 +61,11 @@ export async function signUpAction(formData: FormData) {
     };
   }
 
-  return encodedRedirect(
-    "success",
-    "/login",
-    "Thanks for signing up! Please check your email for a verification link."
-  );
+  return {
+    success: true,
+    message:
+      "Thanks for signing up! Please check your email for a verification link.",
+  };
 }
 
 export async function signInAction(formData: FormData) {
@@ -79,10 +79,16 @@ export async function signInAction(formData: FormData) {
   });
 
   if (error) {
-    throw new Error(error.message);
+    return {
+      success: false,
+      message: error.message,
+    };
   }
 
-  return encodedRedirect("success", "/protected", "Successfully signed in!");
+  return {
+    success: true,
+    message: "Login successful",
+  };
 }
 
 export const forgotPasswordAction = async (formData: FormData) => {
