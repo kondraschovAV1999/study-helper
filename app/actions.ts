@@ -11,38 +11,61 @@ export async function signUpAction(formData: FormData) {
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
 
+  const firstName = formData.get("firstName") as string;
+  const lastName = formData.get("lastName") as string;
+  const birthDay = formData.get("birthDay")?.toString().padStart(2, "0");
+  const birthMonth = formData.get("birthMonth")?.toString().padStart(2, "0");
+  const birthYear = formData.get("birthYear") as string;
+  const dob = new Date(
+    `${birthYear}-${birthMonth}-${birthDay}T00:00:00Z`
+  ).toISOString();
+
   if (!email || !password) {
-    throw new Error("Email and password are required");
+    return {
+      success: false,
+      message: "Email and password are required",
+    };
   }
 
   if (password !== confirmPassword) {
-    throw new Error("Passwords do not match");
+    return {
+      success: false,
+      message: "Passwords do not match",
+    };
   }
 
-  try {
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        f_name: firstName,
+        l_name: lastName,
+        dob: dob,
+      },
+    },
+  });
 
-    if (authError) {
-      console.error("Auth error:", authError);
-      throw new Error(authError.message);
-    }
-
-    if (authData.user) {
-      return encodedRedirect(
-        "success",
-        "/login",
-        "Thanks for signing up! Please check your email for a verification link."
-      );
-    }
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    throw new Error("An unexpected error occurred");
+  if (authError) {
+    console.error("Auth error:", authError);
+    return {
+      success: false,
+      message: authError.message,
+    };
   }
 
-  throw new Error("Something went wrong");
+  if (authData.user?.identities?.length === 0) {
+    return {
+      success: false,
+      message: "User with this email address already exists",
+    };
+  }
+
+  return encodedRedirect(
+    "success",
+    "/login",
+    "Thanks for signing up! Please check your email for a verification link."
+  );
 }
 
 export async function signInAction(formData: FormData) {
@@ -59,11 +82,7 @@ export async function signInAction(formData: FormData) {
     throw new Error(error.message);
   }
 
-  return encodedRedirect(
-    "success",
-    "/protected",
-    "Successfully signed in!"
-  );
+  return encodedRedirect("success", "/protected", "Successfully signed in!");
 }
 
 export const forgotPasswordAction = async (formData: FormData) => {
@@ -85,7 +104,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       "/forgot-password",
-      "Could not reset password",
+      "Could not reset password"
     );
   }
 
@@ -96,7 +115,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
   return encodedRedirect(
     "success",
     "/forgot-password",
-    "Check your email for a link to reset your password.",
+    "Check your email for a link to reset your password."
   );
 };
 
@@ -110,7 +129,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Password and confirm password are required",
+      "Password and confirm password are required"
     );
   }
 
@@ -118,7 +137,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Passwords do not match",
+      "Passwords do not match"
     );
   }
 
@@ -130,7 +149,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Password update failed",
+      "Password update failed"
     );
   }
 
