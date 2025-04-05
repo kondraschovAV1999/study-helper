@@ -16,7 +16,7 @@ export function LandingHeader() {
         {/* Link to login page */}
         <Link href="/login">
           <Button size = "lg" className = "text-base">
-            Log In
+            Sign In
           </Button>
         </Link>
       </div>

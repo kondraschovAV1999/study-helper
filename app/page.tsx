@@ -39,7 +39,7 @@ const FEATURES = [
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Create & Log in header using landing-header component*/}
+      {/* Create & Sign In header using landing-header component*/}
       <LandingHeader/>
 
       {/* Main Content*/}
