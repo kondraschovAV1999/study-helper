@@ -3,8 +3,8 @@ import { FolderOpen, Home, Plus, Book, Menu } from "lucide-react";
 import FlashcardsIcon from "@/components/flashcards-icon";
 import PracticeIcon from "@/components/practice-icon";
 import StudyGuideIcon from "@/components/study-guide-icon";
-import Link from "next/link";
 import { useSidebar } from "@/components/ui/sidebar";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -16,30 +16,47 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Button } from "./ui/button";
+import NavComponent from "./nav-component";
+import ActionComponent, { ActionItem } from "./action-component";
+import { NavItem } from "./nav-component";
 
-interface SidebarMenuGroupProps {
-  sidebarMenu: {
-    title: string;
-    items: { title: string; url: string; icon: any }[];
-  };
+interface NavMenuItem {
+  component: "nav";
+  item: NavItem;
 }
 
-export function SidebarMenuGroup({ sidebarMenu }: SidebarMenuGroupProps) {
+interface ActionMenuItem {
+  component: "action";
+  item: ActionItem;
+}
+
+type MenuItem = NavMenuItem | ActionMenuItem;
+
+interface SidebarMenuProps {
+  title: string;
+  menuItems: MenuItem[];
+}
+
+export function SidebarMenuGroup({
+  sidebarMenu,
+}: {
+  sidebarMenu: SidebarMenuProps;
+}) {
+  const pathname = usePathname();
+
   return (
-    <SidebarGroup>
+    <SidebarGroup className="text-xl">
       {sidebarMenu.title && (
         <SidebarGroupLabel>{sidebarMenu.title}</SidebarGroupLabel>
       )}
       <SidebarGroupContent>
         <SidebarMenu>
-          {sidebarMenu.items.map((item) => (
-            <SidebarMenuItem key={item.title}>
+          {sidebarMenu.menuItems.map((menuItem) => (
+            <SidebarMenuItem key={menuItem.item.title}>
               <SidebarMenuButton asChild>
-                <Link href={item.url}>
-                  <item.icon />
-                  <span className="ml-2">{item.title}</span>
-                </Link>
+                {menuItem.component === "nav"
+                  ? NavComponent(menuItem.item as NavItem, pathname)
+                  : ActionComponent(menuItem.item as ActionItem)}
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -49,59 +66,77 @@ export function SidebarMenuGroup({ sidebarMenu }: SidebarMenuGroupProps) {
   );
 }
 
-const sidebarActions = {
-  new_folder: {
-    title: "Your folders",
-    items: [
-      {
-        title: "New folder",
-        url: "#",
-        icon: Plus,
-      },
-    ],
-  },
-};
-
 const sidebarMenus = {
   navigation: {
     title: "",
-    items: [
+    menuItems: [
       {
-        title: "Home",
-        url: "#",
-        icon: Home,
+        component: "nav",
+        item: {
+          title: "Home",
+          href: "/protected",
+          icon: Home,
+        },
       },
       {
-        title: "Your library",
-        url: "#",
-        icon: FolderOpen,
+        component: "nav",
+        item: {
+          title: "Your library",
+          href: "#",
+          icon: FolderOpen,
+        },
       },
-    ],
+    ] as MenuItem[],
+  },
+  new_folder: {
+    title: "Your folders",
+    menuItems: [
+      {
+        component: "action",
+        item: {
+          title: "New folder",
+          action: () => {},
+          icon: FolderOpen,
+        },
+      },
+    ] as MenuItem[],
   },
   learning: {
     title: "Start here",
-    items: [
+    menuItems: [
       {
-        title: "Flashcards",
-        url: "#",
-        icon: FlashcardsIcon,
+        component: "action",
+        item: {
+          title: "Flashcards",
+          action: () => {},
+          icon: FlashcardsIcon,
+        },
       },
       {
-        title: "Study Guides",
-        url: "#",
-        icon: StudyGuideIcon,
+        component: "nav",
+        item: {
+          title: "Study Guides",
+          href: "#",
+          icon: StudyGuideIcon,
+        },
       },
       {
-        title: "Practice Tests",
-        url: "#",
-        icon: PracticeIcon,
+        component: "nav",
+        item: {
+          title: "Practice Tests",
+          href: "#",
+          icon: PracticeIcon,
+        },
       },
       {
-        title: "Expert Solutions",
-        url: "#",
-        icon: Book,
+        component: "nav",
+        item: {
+          title: "Expert Solutions",
+          href: "#",
+          icon: Book,
+        },
       },
-    ],
+    ] as MenuItem[],
   },
 };
 
@@ -114,24 +149,6 @@ export default function LeftSidebar() {
         <Menu />
       </SidebarMenuButton>
     </SidebarMenuItem>
-  );
-
-  const renderNewFolderSection = () => (
-    <SidebarGroup>
-      <SidebarGroupLabel>{sidebarActions.new_folder.title}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {sidebarActions.new_folder.items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton>
-                <item.icon />
-                <span className="ml-2">{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
   );
 
   const Divider = () => <hr className="border-t-2 border-border my-2 mx-2" />;
@@ -148,7 +165,7 @@ export default function LeftSidebar() {
 
           <SidebarMenuGroup sidebarMenu={sidebarMenus.navigation} />
           <Divider />
-          {renderNewFolderSection()}
+          <SidebarMenuGroup sidebarMenu={sidebarMenus.new_folder} />
           <Divider />
           <SidebarMenuGroup sidebarMenu={sidebarMenus.learning} />
         </Sidebar>
