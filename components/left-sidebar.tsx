@@ -60,7 +60,10 @@ export function SidebarMenuGroup({
                     pathname={pathname}
                   />
                 ) : (
-                  <ActionComponent item={menuItem.item as ActionItem} />
+                  <ActionComponent
+                    item={menuItem.item as ActionItem}
+                    isLoggedIn={true}
+                  />
                 )}
               </SidebarMenuButton>
             </SidebarMenuItem>
