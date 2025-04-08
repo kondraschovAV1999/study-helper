@@ -14,9 +14,20 @@ const triggerStyle = (isActive: boolean) => {
     `;
 };
 
-const NavComponent = (item: NavItem, pathname: string) => {
+const NavComponent = ({
+  item,
+  pathname,
+  className,
+}: {
+  item: NavItem;
+  pathname: string;
+  className?: string;
+}) => {
   return (
-    <Link href={item.href} className={triggerStyle(pathname === item.href)}>
+    <Link
+      href={item.href}
+      className={triggerStyle(pathname === item.href) + className}
+    >
       <item.icon />
       <span className="ml-2">{item.title}</span>
     </Link>
