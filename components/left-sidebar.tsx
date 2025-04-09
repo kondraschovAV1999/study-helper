@@ -20,17 +20,17 @@ import NavComponent from "./nav-component";
 import ActionComponent, { ActionItem } from "./action-component";
 import { NavItem } from "./nav-component";
 
-interface NavMenuItem {
+export interface NavMenuItem {
   component: "nav";
   item: NavItem;
 }
 
-interface ActionMenuItem {
+export interface ActionMenuItem {
   component: "action";
   item: ActionItem;
 }
 
-type MenuItem = NavMenuItem | ActionMenuItem;
+export type MenuItem = NavMenuItem | ActionMenuItem;
 
 interface SidebarMenuProps {
   title: string;
@@ -54,9 +54,17 @@ export function SidebarMenuGroup({
           {sidebarMenu.menuItems.map((menuItem) => (
             <SidebarMenuItem key={menuItem.item.title}>
               <SidebarMenuButton asChild>
-                {menuItem.component === "nav"
-                  ? NavComponent(menuItem.item as NavItem, pathname)
-                  : ActionComponent(menuItem.item as ActionItem)}
+                {menuItem.component === "nav" ? (
+                  <NavComponent
+                    item={menuItem.item as NavItem}
+                    pathname={pathname}
+                  />
+                ) : (
+                  <ActionComponent
+                    item={menuItem.item as ActionItem}
+                    isLoggedIn={true}
+                  />
+                )}
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
