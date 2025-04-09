@@ -1,12 +1,12 @@
 import { InfoIcon } from "lucide-react";
-import { ProtectedHeader } from "@/components/protected-header";
+import { LandingHeader } from "@/components/landing-header";
 import LeftSidebar from "@/components/left-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default async function ProtectedPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* <ProtectedHeader /> */}
+      <LandingHeader isProtectedPage={true} />
       <SidebarProvider
         style={
           {
