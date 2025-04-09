@@ -15,10 +15,10 @@ export async function LandingHeader({ isProtectedPage = false}: { isProtectedPag
     "use server"
     await signOutAction();
     redirect("/");
-  };
+  }
 
   return (
-    <header className="w-full flex justify-end p-4 sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+    <header className="w-full flex justify-end p-4 sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
       <div className="flex gap-4">
         {/* Link to login page if user is not already signed in, if not dropdown menu for creating study materials */}
         <CreateMenu isLoggedIn={!!user} />
