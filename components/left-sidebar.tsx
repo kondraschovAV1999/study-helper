@@ -45,15 +45,15 @@ export function SidebarMenuGroup({
   const pathname = usePathname();
 
   return (
-    <SidebarGroup className="text-xl">
+    <SidebarGroup className="!text-xl">
       {sidebarMenu.title && (
-        <SidebarGroupLabel>{sidebarMenu.title}</SidebarGroupLabel>
+        <SidebarGroupLabel className= "text-base">{sidebarMenu.title}</SidebarGroupLabel>
       )}
       <SidebarGroupContent>
         <SidebarMenu>
           {sidebarMenu.menuItems.map((menuItem) => (
             <SidebarMenuItem key={menuItem.item.title}>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild className = "text-base">
                 {menuItem.component === "nav" ? (
                   <NavComponent
                     item={menuItem.item as NavItem}
@@ -154,7 +154,7 @@ export default function LeftSidebar() {
   const renderSidebarMenuButton = () => (
     <SidebarMenuItem>
       <SidebarMenuButton onClick={toggleSidebar}>
-        <Menu />
+        <Menu className = "!w-6 !h-6"/>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
@@ -181,7 +181,7 @@ export default function LeftSidebar() {
 
       <main className="flex-1 p-4">
         <button className="md:hidden mb-4" onClick={toggleSidebar}>
-          <Menu />
+          <Menu size = {34}/>
         </button>
       </main>
     </div>
