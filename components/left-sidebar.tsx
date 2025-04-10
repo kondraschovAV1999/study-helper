@@ -163,7 +163,7 @@ export default function LeftSidebar() {
 
   return (
     <div className="flex">
-      <div className="transition-all duration-300 ease-in-out fixed md:relative top-0 left-0 h-full z-40 bg-background border-r">
+      <div className="transition-all duration-300 ease-in-out fixed md:relative top-0 left-0 h-full z-[60] bg-background border-r">
         <Sidebar collapsible="icon">
           <SidebarGroup>
             <SidebarGroupContent>

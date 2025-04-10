@@ -40,7 +40,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Create & Sign In header using landing-header component*/}
-      <LandingHeader/>
+      <LandingHeader isProtectedPage= {false}/>
 
       {/* Main Content*/}
       <main className= "flex-1">
