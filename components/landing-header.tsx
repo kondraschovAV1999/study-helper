@@ -11,11 +11,6 @@ export async function LandingHeader({ isProtectedPage = false}: { isProtectedPag
     data: { user },
   } = await supabase.auth.getUser();
 
-  const handleSignOut = async () => {
-    "use server"
-    await signOutAction();
-    redirect("/");
-  }
 
   return (
     <header className="w-full flex justify-end p-4 sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -24,7 +19,7 @@ export async function LandingHeader({ isProtectedPage = false}: { isProtectedPag
         <CreateMenu isLoggedIn={!!user} />
 
         { isProtectedPage || user ? (
-          <form action={handleSignOut}>
+          <form action={signOutAction}>
             <Button className="text-base" type="submit">
               Sign Out
             </Button>
