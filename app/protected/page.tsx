@@ -1,7 +1,9 @@
-import { InfoIcon } from "lucide-react";
+
 import { LandingHeader } from "@/components/landing-header";
 import LeftSidebar from "@/components/left-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Recents } from "@/components/recents";
+import { mockRecentItems } from "@/data/mock-recents";
 
 export default async function ProtectedPage() {
   return (
@@ -17,16 +19,16 @@ export default async function ProtectedPage() {
       >
         <LeftSidebar />
         <main className="container mx-auto p-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-2 mb-4">
-              <InfoIcon className="h-5 w-5 text-primary" />
-              <h2 className="text-2xl font-semibold">Protected Page</h2>
-            </div>
-            <div className="p-6 bg-card rounded-lg shadow">
-              <p className="text-muted-foreground">
-                This is a protected page. Only authenticated users can see this
-                content.
-              </p>
+          <h1 className="text-2xl font-bold mb-4">Welcome back!</h1>
+          <p className="mb-4">
+            Ready to study? Access your generated study materials or upload new documents to get started.
+          </p>
+          <div className="max-w-full mx-auto">
+            <div className = "mb-8">
+              <Recents
+                items={mockRecentItems}
+                title="Recents"
+              />
             </div>
           </div>
         </main>
