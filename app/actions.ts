@@ -4,6 +4,12 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { FileToTextConverter } from "@/utils/file-converters/file-converter";
+import { PdfToTextConverter } from "@/utils/file-converters/pdf-converter";
+import { DocsxToTextConverter } from "@/utils/file-converters/docx-converter";
+import { PptxToTextConverter } from "@/utils/file-converters/pptx-converter";
+import { generateStudyGuide } from "@/utils/ai/generate-study-guide";
+import createFileInFolder from "@/utils/file/create-file-in-folder";
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
@@ -167,3 +173,123 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   return redirect("/login");
 };
+
+/**
+ * Retrieves the currently authenticated user from Supabase
+ *
+ * @returns Promise<User | null> - The authenticated user object or null if no user is authenticated
+ * @throws Error if there's an error retrieving the user
+ */
+export const getUser = async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return user;
+};
+
+const converterMap: Record<string, FileToTextConverter> = {
+  "application/pdf": new PdfToTextConverter(),
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    new DocsxToTextConverter(),
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+    new PptxToTextConverter(),
+};
+
+/**
+ * Creates a study guide from an uploaded file
+ *
+ * @param formData - Form data containing:
+ *   - folderId: The ID of the folder to store the files in
+ *   - title: The title of the study guide
+ *   - file: The file to generate the study guide from
+ *
+ * @returns Promise<{success: boolean, message: string}>
+ *   - success: Whether the operation was successful
+ *   - message: A description of the result or error
+ *
+ * The function:
+ * 1. Validates the user is authenticated
+ * 2. Converts the uploaded file to text using an appropriate converter
+ * 3. Generates an AI study guide from the text
+ * 4. Stores both the original and generated files in Supabase storage
+ * 5. Creates a study guide record linking the files
+ *
+ */
+export async function createStudyGuide(formData: FormData) {
+  try {
+    const supabase = await createClient();
+    const user = await getUser();
+
+    const folderId = formData.get("folderId") as string;
+    const title = formData.get("title") as string;
+
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
+    const formFile = formData.get("file") as File;
+
+    const buffer = Buffer.from(await formFile.arrayBuffer());
+
+    const converter = converterMap[formFile.type];
+
+    if (!converter) {
+      throw new Error("Unsupported file type");
+    }
+
+    const origFileId = await createFileInFolder(
+      formFile,
+      folderId,
+      false,
+      user.id,
+      "study-guide",
+      supabase
+    );
+
+    const text = await converter.convert(buffer);
+    const studyGuide = await generateStudyGuide(text);
+    const studyGuideString = JSON.stringify(studyGuide);
+    const arrayBuffer = new TextEncoder().encode(studyGuideString);
+    const genFile = new File([arrayBuffer], `${formFile.name}-ai.json`, {
+      type: "application/json",
+    });
+
+    const genFileId = await createFileInFolder(
+      genFile,
+      folderId,
+      true,
+      user.id,
+      "study-guide",
+      supabase
+    );
+
+    const { error } = await supabase.from("study_guide").insert({
+      user_id: user.id,
+      orig_file_id: origFileId,
+      gen_file_id: genFileId,
+      folder_id: folderId,
+      title: title,
+    });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    return {
+      success: true,
+      message: "Study guide created successfully",
+    };
+  } catch (error) {
+    console.error("Error creating study guide:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
