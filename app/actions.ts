@@ -9,7 +9,7 @@ import { PdfToTextConverter } from "@/utils/file-converters/pdf-converter";
 import { DocsxToTextConverter } from "@/utils/file-converters/docx-converter";
 import { PptxToTextConverter } from "@/utils/file-converters/pptx-converter";
 import { generateStudyGuide } from "@/utils/ai/generate-study-guide";
-import createFileInFolder from "@/utils/file/create-file-in-folder";
+import storeFile from "@/utils/file/store-file";
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
@@ -223,35 +223,22 @@ const converterMap: Record<string, FileToTextConverter> = {
  *
  */
 export async function createStudyGuide(formData: FormData) {
+  const bucketName = "study-guide";
   try {
     const supabase = await createClient();
     const user = await getUser();
+    if (!user) throw new Error("User not authenticated");
 
     const folderId = formData.get("folderId") as string;
     const title = formData.get("title") as string;
-
-    if (!user) {
-      throw new Error("User not authenticated");
-    }
-
     const formFile = formData.get("file") as File;
 
     const buffer = Buffer.from(await formFile.arrayBuffer());
-
     const converter = converterMap[formFile.type];
 
-    if (!converter) {
-      throw new Error("Unsupported file type");
-    }
+    if (!converter) throw new Error("Unsupported file type");
 
-    const origFileId = await createFileInFolder(
-      formFile,
-      folderId,
-      false,
-      user.id,
-      "study-guide",
-      supabase
-    );
+    const origFileId = await storeFile(formFile, bucketName, user.id, supabase);
 
     const text = await converter.convert(buffer);
     const studyGuide = await generateStudyGuide(text);
@@ -261,26 +248,19 @@ export async function createStudyGuide(formData: FormData) {
       type: "application/json",
     });
 
-    const genFileId = await createFileInFolder(
-      genFile,
-      folderId,
-      true,
-      user.id,
-      "study-guide",
-      supabase
-    );
+    const genFileId = await storeFile(genFile, bucketName, user.id, supabase);
 
-    const { error } = await supabase.from("study_guide").insert({
-      user_id: user.id,
+    const { error: rpcError } = await supabase.rpc("create_study_guide", {
       orig_file_id: origFileId,
       gen_file_id: genFileId,
       folder_id: folderId,
       title: title,
+      orig_file_name: formFile.name,
+      gen_file_name: genFile.name,
     });
-    
-    if (error) {
-      throw new Error(error.message);
-    }
+
+    if (rpcError) throw new Error(rpcError.message);
+
     return {
       success: true,
       message: "Study guide created successfully",
