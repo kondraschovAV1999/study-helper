@@ -5,6 +5,8 @@ import PracticeIcon from "@/components/practice-icon";
 import StudyGuideIcon from "@/components/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 import {
   Sidebar,
@@ -19,6 +21,7 @@ import {
 import NavComponent from "./nav-component";
 import ActionComponent, { ActionItem } from "./action-component";
 import { NavItem } from "./nav-component";
+import { CreateFolderDialog } from "./create-folder-dialog";
 
 export interface NavMenuItem {
   component: "nav";
@@ -37,40 +40,162 @@ interface SidebarMenuProps {
   menuItems: MenuItem[];
 }
 
+interface Folder {
+  id: string;
+}
+
+interface FolderInFolder {
+  folder_id: string;
+  folders: Folder;
+  folder_name: string;
+}
+
 export function SidebarMenuGroup({
   sidebarMenu,
 }: {
   sidebarMenu: SidebarMenuProps;
 }) {
   const pathname = usePathname();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [subfolders, setSubfolders] = useState<{id: string, name: string}[]>([]);
+  const supabase = createClient();
+
+  const fetchSubfolders = async () => {
+    if (sidebarMenu.title === "My folders") {
+      const { data: parentFolder } = await supabase
+        .from('folder_in_folder')
+        .select('folder_id')
+        .eq('folder_name', 'My Folders')
+        .single();
+
+      if (parentFolder) {
+        const { data: folders } = await supabase
+          .from('folder_in_folder')
+          .select('folder_id, folder_name')
+          .eq('parent_id', parentFolder.folder_id) as { data: FolderInFolder[] | null };
+
+        if (folders) {
+          setSubfolders(folders.map(f => ({
+            id: f.folder_id,
+            name: f.folder_name
+          })));
+        }
+      }
+    }
+  };
+
+  const handleCreateFolder = async (folderName: string) => {
+    const trimmedName = folderName.trim();
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await supabase
+      .from("user")
+      .select("id")
+      .eq("auth_user_id", user?.id)
+      .single();
+
+    const { data: parentFolder } = await supabase
+      .from('folder_in_folder')
+      .select('folder_id')
+      .eq('folder_name', 'My Folders')
+      .single();
+
+    if (parentFolder) {
+      const { data: existingFolder } = await supabase
+        .from('folder_in_folder')
+        .select('folder_name')
+        .eq('parent_id', parentFolder.folder_id)
+        .eq('folder_name', trimmedName)
+        .single();
+
+      if (existingFolder) {
+        return { success: false, error: "A folder with this name already exists" };
+      }
+
+      const { data: newFolder } = await supabase
+        .from('folder')
+        .insert([{}])
+        .select()
+        .single();
+
+      if (newFolder) {
+        await supabase
+          .from('folder_in_folder')
+          .insert([{
+            user_id: userData?.id,
+            parent_id: parentFolder.folder_id,
+            folder_name: trimmedName,
+            folder_id: newFolder.id
+          }]);
+
+        fetchSubfolders();
+        return { success: true };
+      }
+    }
+    return { success: false, error: "Failed to create folder" };
+  };
+
+  useEffect(() => {
+    fetchSubfolders();
+  }, []);
+
+  const menuItems = [...sidebarMenu.menuItems];
+  if (sidebarMenu.title === "My folders") {
+    subfolders.forEach(folder => {
+      menuItems.unshift({
+        component: "nav",
+        item: {
+          title: folder.name,
+          href: `/folders/${folder.id}`,
+          icon: FolderOpen,
+        }
+      });
+    });
+  }
 
   return (
-    <SidebarGroup className="!text-xl">
-      {sidebarMenu.title && (
+    <>
+      <SidebarGroup className="!text-xl">
+        {sidebarMenu.title && (
         <SidebarGroupLabel className= "text-base">{sidebarMenu.title}</SidebarGroupLabel>
-      )}
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {sidebarMenu.menuItems.map((menuItem) => (
-            <SidebarMenuItem key={menuItem.item.title}>
+        )}
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {menuItems.map((menuItem) => (
+              <SidebarMenuItem key={menuItem.item.title}>
               <SidebarMenuButton asChild className = "text-base">
-                {menuItem.component === "nav" ? (
-                  <NavComponent
-                    item={menuItem.item as NavItem}
-                    pathname={pathname}
-                  />
-                ) : (
-                  <ActionComponent
-                    item={menuItem.item as ActionItem}
-                    isLoggedIn={true}
-                  />
-                )}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+                  {menuItem.component === "nav" ? (
+                    <NavComponent
+                      item={menuItem.item as NavItem}
+                      pathname={pathname}
+                    />
+                  ) : (
+                    <ActionComponent
+                      item={{
+                        ...menuItem.item as ActionItem,
+                        action: () => {
+                          if (sidebarMenu.title === "My folders") {
+                            setIsDialogOpen(true);
+                          } else {
+                            (menuItem.item as ActionItem).action(true);
+                          }
+                        }
+                      }}
+                      isLoggedIn={true}
+                    />
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+
+      <CreateFolderDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSubmit={handleCreateFolder}
+      />
+    </>
   );
 }
 
@@ -89,22 +214,22 @@ const sidebarMenus = {
       {
         component: "nav",
         item: {
-          title: "Your library",
+          title: "My library",
           href: "#",
           icon: FolderOpen,
         },
       },
     ] as MenuItem[],
   },
-  new_folder: {
-    title: "Your folders",
+  folderItems: {
+    title: "My folders",
     menuItems: [
       {
         component: "action",
         item: {
-          title: "New folder",
+          title: "Create New",
           action: () => {},
-          icon: FolderOpen,
+          icon: Plus,
         },
       },
     ] as MenuItem[],
@@ -173,7 +298,7 @@ export default function LeftSidebar() {
 
           <SidebarMenuGroup sidebarMenu={sidebarMenus.navigation} />
           <Divider />
-          <SidebarMenuGroup sidebarMenu={sidebarMenus.new_folder} />
+          <SidebarMenuGroup sidebarMenu={sidebarMenus.folderItems} />
           <Divider />
           <SidebarMenuGroup sidebarMenu={sidebarMenus.learning} />
         </Sidebar>
