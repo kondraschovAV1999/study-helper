@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -16,12 +16,18 @@ import {
 interface CreateFolderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (folderName: string) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (
+    folderName: string
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
-export function CreateFolderDialog({ open, onOpenChange, onSubmit }: CreateFolderDialogProps) {
-  const [folderName, setFolderName] = React.useState("");
-  const [error, setError] = React.useState<string | null>(null);
+export function CreateFolderDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+}: CreateFolderDialogProps) {
+  const [folderName, setFolderName] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,8 +43,8 @@ export function CreateFolderDialog({ open, onOpenChange, onSubmit }: CreateFolde
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onOpenChange={(open) => {
         if (!open) {
           setError(null);
@@ -69,9 +75,7 @@ export function CreateFolderDialog({ open, onOpenChange, onSubmit }: CreateFolde
                   error && "border-destructive focus-visible:ring-destructive"
                 )}
               />
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
+              {error && <p className="text-sm text-destructive">{error}</p>}
             </div>
           </div>
           <DialogFooter>
@@ -83,4 +87,4 @@ export function CreateFolderDialog({ open, onOpenChange, onSubmit }: CreateFolde
       </DialogContent>
     </Dialog>
   );
-} 
+}

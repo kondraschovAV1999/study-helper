@@ -167,3 +167,30 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   return redirect("/login");
 };
+
+export async function createFolder(formData: FormData) {
+  const folder_name = formData.get("folder_name") as string;
+  const parent_id = formData.get("parent_id") as string;
+
+  const supabase = await createClient();
+  const {
+    data: { folder_in_folder },
+    error,
+  } = await supabase.rpc("create_folder", {
+    folder_name,
+    parent_id,
+  });
+
+  if (error) {
+    console.error("Folder creation error: ", error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+
+  return {
+    success: true,
+    content: folder_in_folder,
+  };
+}
