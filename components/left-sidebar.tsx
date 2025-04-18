@@ -8,6 +8,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { FlashcardDialog } from "./flashcard-dialog";
 import {
   fetchSubFolders,
   Folder,
@@ -54,6 +55,7 @@ export function SidebarMenuGroup({
 }) {
   const pathname = usePathname();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeDialog, setActiveDialog] = useState<'folder' | 'flashcards' | null>(null);
   const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>(
     []
   );
@@ -86,6 +88,15 @@ export function SidebarMenuGroup({
         }))
       );
     }
+
+    const handleFlashcardAction = async (type: 'upload' | 'manual') => {
+      if (type === 'upload') {
+        // upload logic
+      } else {
+        // manual creation
+      }
+      setIsDialogOpen(false);
+    };
   };
 
   useEffect(() => {
@@ -108,51 +119,57 @@ export function SidebarMenuGroup({
 
   return (
     <>
-      <SidebarGroup className="!text-xl">
-        {sidebarMenu.title && (
-          <SidebarGroupLabel className="text-base">
-            {sidebarMenu.title}
-          </SidebarGroupLabel>
-        )}
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {menuItems.map((menuItem) => (
-              <SidebarMenuItem key={menuItem.item.title}>
-                <SidebarMenuButton asChild className="text-base">
-                  {menuItem.component === "nav" ? (
-                    <NavComponent
-                      item={menuItem.item as NavItem}
-                      pathname={pathname}
-                    />
-                  ) : (
-                    <ActionComponent
-                      item={{
-                        ...(menuItem.item as ActionItem),
-                        action: () => {
-                          if (sidebarMenu.title === "My folders") {
-                            setIsDialogOpen(true);
-                          } else {
-                            (menuItem.item as ActionItem).action(true);
-                          }
-                        },
-                      }}
-                      isLoggedIn={true}
-                    />
-                  )}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+    <SidebarGroup className="!text-xl">
+      {/* ... existing group content ... */}
+        <SidebarMenu>
+          {menuItems.map((menuItem) => (
+            <SidebarMenuItem key={menuItem.item.title}>
+              <SidebarMenuButton asChild className="text-base">
+                {menuItem.component === "nav" ? (
+                  <NavComponent item={menuItem.item as NavItem} pathname={pathname} />
+                ) : (
+                  <ActionComponent
+                    item={{
+                      ...(menuItem.item as ActionItem),
+                      action: () => {
+                        if (sidebarMenu.title === "My folders") {
+                          setActiveDialog('folder');
+                          setIsDialogOpen(true);
+                        } else if (menuItem.item.title === "Flashcards") {
+                          setActiveDialog('flashcards');
+                          setIsDialogOpen(true);
+                        } else {
+                          (menuItem.item as ActionItem).action(true);
+                        }
+                      },
+                    }}
+                    isLoggedIn={true}
+                  />
+                )}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+    </SidebarGroup>
 
+    {activeDialog === 'folder' && (
       <CreateFolderDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSubmit={handleSubmit}
       />
-    </>
-  );
+    )}
+
+    {activeDialog === 'flashcards' && (
+      <FlashcardDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onCreateFromUpload={() => handleFlashcardAction('upload')} // upload logic
+        onCreateManually={() => handleFlashcardAction('manual')} // manual creation logic
+      />
+    )}
+  </>
+);
 }
 
 const sidebarMenus = {
@@ -231,6 +248,7 @@ const sidebarMenus = {
 
 export default function LeftSidebar() {
   const { toggleSidebar } = useSidebar();
+  const [isFlashcardDialogOpen, setIsFlashcardDialogOpen] = useState(false);
 
   const renderSidebarMenuButton = () => (
     <SidebarMenuItem>
