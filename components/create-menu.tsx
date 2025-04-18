@@ -46,18 +46,6 @@ const menuItems = [
       icon: PracticeIcon,
     },
   },
-  {
-    component: "action",
-    item: {
-      title: "Folder",
-      action: (isLoggedIn) => {
-        if (!isLoggedIn) {
-          redirect("/login");
-        }
-      },
-      icon: Folder,
-    },
-  },
 ] as MenuItem[];
 
 export default function CreateMenu({ isLoggedIn }: { isLoggedIn: boolean }) {
