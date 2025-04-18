@@ -17,8 +17,12 @@ interface CreateFolderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (
-    folderName: string
-  ) => Promise<{ success: boolean; error?: string }>;
+    folder_name: string,
+    parent_id?: string
+  ) => Promise<{
+    success: boolean;
+    message: string;
+  }>;
 }
 
 export function CreateFolderDialog({
@@ -38,7 +42,7 @@ export function CreateFolderDialog({
       setFolderName("");
       onOpenChange(false);
     } else {
-      setError(result.error || "Failed to create folder");
+      setError(result.message || "Failed to create folder");
     }
   };
 
