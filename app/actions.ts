@@ -168,15 +168,28 @@ export const signOutAction = async () => {
   return redirect("/login");
 };
 
-export async function createFolder(formData: FormData) {
-  const folder_name = formData.get("folder_name") as string;
-  const parent_id = formData.get("parent_id") as string;
-
+export async function createFolder(
+  folder_name: string,
+  parent_id: string = "00000000-0000-0000-0000-000000000000"
+) {
   const supabase = await createClient();
-  const {
-    data: { folder_in_folder },
-    error,
-  } = await supabase.rpc("create_folder", {
+  if (parent_id === "00000000-0000-0000-0000-000000000000") {
+    const { data, error: err } = await supabase.rpc(
+      "get_folder_id_under_root",
+      {
+        target_folder_name: "My Folders",
+      }
+    );
+    if (err) {
+      return {
+        success: false,
+        message: err.message,
+      };
+    }
+    parent_id = data;
+  }
+
+  const { data, error } = await supabase.rpc("create_folder", {
     folder_name,
     parent_id,
   });
@@ -191,7 +204,7 @@ export async function createFolder(formData: FormData) {
 
   return {
     success: true,
-    content: folder_in_folder,
+    message: "Folder was successfully created",
   };
 }
 
@@ -207,17 +220,16 @@ export interface FolderInFolder {
 
 export async function fetchSubFolders(
   folder_name: string,
-  parent_id?: "00000000-0000-0000-0000-000000000000"
+  parent_id: string = "00000000-0000-0000-0000-000000000000"
 ): Promise<{
   success: boolean;
   message: string;
   content: FolderInFolder[];
 }> {
   const supabase = await createClient();
-  const {
-    data: { user_id },
-    error: err_fetching_user,
-  } = await supabase.rpc("fetch_current_user_id");
+  const { data: user_id, error: err_fetching_user } = await supabase.rpc(
+    "fetch_current_user_id"
+  );
   if (err_fetching_user) {
     return {
       success: false,
@@ -226,11 +238,27 @@ export async function fetchSubFolders(
     };
   }
 
-  const { data: folders, error } = await supabase
+  if (parent_id === "00000000-0000-0000-0000-000000000000") {
+    const { data, error: err } = await supabase.rpc(
+      "get_folder_id_under_root",
+      {
+        target_folder_name: "My Folders",
+      }
+    );
+    if (err) {
+      return {
+        success: false,
+        content: [],
+        message: err.message,
+      };
+    }
+    parent_id = data;
+  }
+
+  const { data, error } = await supabase
     .from("folder_in_folder")
     .select("*")
     .eq("user_id", user_id)
-    .eq("folder_name", folder_name)
     .eq("parent_id", parent_id);
 
   if (error) {
@@ -243,6 +271,6 @@ export async function fetchSubFolders(
   return {
     success: true,
     message: "",
-    content: folders as FolderInFolder[],
+    content: data as FolderInFolder[],
   };
 }
