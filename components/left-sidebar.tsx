@@ -7,10 +7,7 @@ import StudyGuideIcon from "@/components/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import {
-  fetchSubFolders,
-  createFolder,
-} from "../app/actions";
+import { fetchSubFolders, createFolder } from "../app/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,8 +56,13 @@ export function SidebarMenuGroup({
   const pathname = usePathname();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
-  const [selectedFolder, setSelectedFolder] = useState<{ id: string; name: string } | null>(null);
-  const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>(
+    []
+  );
 
   const handleSubmit = async (
     folder_name: string,
@@ -116,8 +118,9 @@ export function SidebarMenuGroup({
                   <MoreVertical className="h-4 w-4" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="z-[100]">
+              <DropdownMenuContent className="z-[100] w-fit p-0">
                 <DropdownMenuItem
+                  className="flex items-center justify-center border border-border hover:bg-accent hover:!text-blue-300"
                   onClick={() => {
                     setSelectedFolder(folder);
                     setIsRenameDialogOpen(true);
