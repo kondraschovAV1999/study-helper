@@ -1,5 +1,5 @@
 "use client";
-import { FolderOpen, Home, Plus, Book, Menu, MoreVertical } from "lucide-react";
+import { FolderOpen, Home, Plus, Book, Menu, MoreVertical, Trash2 } from "lucide-react";
 import { Folder as FolderIcon } from "lucide-react";
 import FlashcardsIcon from "@/components/flashcards-icon";
 import PracticeIcon from "@/components/practice-icon";
@@ -18,10 +18,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RenameFolderDialog } from "./rename-folder-dialog";
+import { DeleteFolderDialog } from "./delete-folder-dialog";
 
 import {
   Sidebar,
-  SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -59,6 +59,7 @@ export function SidebarMenuGroup({
   const pathname = usePathname();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState<{ id: string; name: string } | null>(null);
   const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>([]);
 
@@ -100,6 +101,10 @@ export function SidebarMenuGroup({
     loadFolders();
   };
 
+  const handleDeleteSuccess = () => {
+    loadFolders();
+  };
+
   const menuItems = [...sidebarMenu.menuItems];
   if (sidebarMenu.title === "My folders") {
     subfolders.forEach((folder) => {
@@ -124,6 +129,16 @@ export function SidebarMenuGroup({
                   }}
                 >
                   Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => {
+                    setSelectedFolder(folder);
+                    setIsDeleteDialogOpen(true);
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -180,13 +195,22 @@ export function SidebarMenuGroup({
       />
 
       {selectedFolder && (
-        <RenameFolderDialog
-          open={isRenameDialogOpen}
-          onOpenChange={setIsRenameDialogOpen}
-          folderId={selectedFolder.id}
-          currentName={selectedFolder.name}
-          onSuccess={handleRenameSuccess}
-        />
+        <>
+          <RenameFolderDialog
+            open={isRenameDialogOpen}
+            onOpenChange={setIsRenameDialogOpen}
+            folderId={selectedFolder.id}
+            currentName={selectedFolder.name}
+            onSuccess={handleRenameSuccess}
+          />
+          <DeleteFolderDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            folderId={selectedFolder.id}
+            folderName={selectedFolder.name}
+            onSuccess={handleDeleteSuccess}
+          />
+        </>
       )}
     </>
   );
