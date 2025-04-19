@@ -196,6 +196,12 @@ export async function createFolder(
 
   if (error) {
     console.error("Folder creation error: ", error);
+    if (error.code === '23505') {
+      return {
+        success: false,
+        message: "A folder with this name already exists",
+      };
+    }
     return {
       success: false,
       message: error.message,
@@ -272,5 +278,66 @@ export async function fetchSubFolders(
     success: true,
     message: "",
     content: data as FolderInFolder[],
+  };
+}
+
+export async function renameFolder(
+  folder_id: string,
+  new_name: string
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  const supabase = await createClient();
+  
+  const { error } = await supabase
+    .from("folder_in_folder")
+    .update({ folder_name: new_name })
+    .eq("folder_id", folder_id);
+
+  if (error) {
+    console.error("Folder rename error: ", error);
+    if (error.code === '23505') {
+      return {
+        success: false,
+        message: "A folder with this name already exists",
+      };
+    }
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+
+  return {
+    success: true,
+    message: "Folder was successfully renamed",
+  };
+}
+
+export async function deleteFolder(
+  folder_id: string
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  const supabase = await createClient();
+  
+  const { error } = await supabase
+    .from("folder")
+    .delete()
+    .eq("id", folder_id);
+
+  if (error) {
+    console.error("Folder deletion error: ", error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+
+  return {
+    success: true,
+    message: "Folder was successfully deleted",
   };
 }

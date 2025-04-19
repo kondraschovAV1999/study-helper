@@ -1,5 +1,5 @@
 "use client";
-import { FolderOpen, Home, Plus, Book, Menu } from "lucide-react";
+import { FolderOpen, Home, Plus, Book, Menu, MoreVertical, Trash2 } from "lucide-react";
 import { Folder as FolderIcon } from "lucide-react";
 import FlashcardsIcon from "@/components/flashcards-icon";
 import PracticeIcon from "@/components/practice-icon";
@@ -7,18 +7,19 @@ import StudyGuideIcon from "@/components/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { FlashcardDialog } from "./flashcard-dialog";
+import { fetchSubFolders, createFolder } from "../app/actions";
 import {
-  fetchSubFolders,
-  Folder,
-  FolderInFolder,
-  createFolder,
-} from "../app/actions";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { RenameFolderDialog } from "./rename-folder-dialog";
+import { DeleteFolderDialog } from "./delete-folder-dialog";
 
 import {
   Sidebar,
-  SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -43,6 +44,13 @@ export interface ActionMenuItem {
 
 export type MenuItem = NavMenuItem | ActionMenuItem;
 
+export enum DialogOption {
+  folder = 'folder',
+  flashcards = 'flashcards'
+  rename = 'rename',
+  delete = 'delete'
+}
+
 interface SidebarMenuProps {
   title: string;
   menuItems: MenuItem[];
@@ -55,10 +63,10 @@ export function SidebarMenuGroup({
 }) {
   const pathname = usePathname();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeDialog, setActiveDialog] = useState<'folder' | 'flashcards' | null>(null);
-  const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>(
-    []
-  );
+
+  const [activeDialog, setActiveDialog] = useState<DialogOption | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<{ id: string; name: string } | null>(null);
+  const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>([]);
 
   const handleSubmit = async (
     folder_name: string,
@@ -103,6 +111,14 @@ export function SidebarMenuGroup({
     loadFolders();
   }, []);
 
+  const handleRenameSuccess = () => {
+    loadFolders();
+  };
+
+  const handleDeleteSuccess = () => {
+    loadFolders();
+  };
+
   const menuItems = [...sidebarMenu.menuItems];
   if (sidebarMenu.title === "My folders") {
     subfolders.forEach((folder) => {
@@ -112,6 +128,36 @@ export function SidebarMenuGroup({
           title: folder.name,
           href: `/folders/${folder.id}`,
           icon: FolderIcon,
+          options: (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1 hover:bg-accent rounded-md">
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="z-[100] w-fit p-0">
+                <DropdownMenuItem
+                  className="flex items-center justify-center border border-border hover:bg-accent hover:!text-blue-300"
+                  onClick={() => {
+                    setSelectedFolder(folder);
+                    setActiveDialog(DialogOption.rename);
+                  }}
+                >
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => {
+                    setSelectedFolder(folder);
+                    setActiveDialog(DialogOption.delete);
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ),
         },
       });
     });
@@ -133,10 +179,10 @@ export function SidebarMenuGroup({
                       ...(menuItem.item as ActionItem),
                       action: () => {
                         if (sidebarMenu.title === "My folders") {
-                          setActiveDialog('folder');
+                          setActiveDialog(DialogOption.folder);
                           setIsDialogOpen(true);
                         } else if (menuItem.item.title === "Flashcards") {
-                          setActiveDialog('flashcards');
+                          setActiveDialog(DialogOption.flashcards);
                           setIsDialogOpen(true);
                         } else {
                           (menuItem.item as ActionItem).action(true);
@@ -152,15 +198,16 @@ export function SidebarMenuGroup({
         </SidebarMenu>
     </SidebarGroup>
 
-    {activeDialog === 'folder' && (
+    {activeDialog === DialogOption.folder && (
       <CreateFolderDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSubmit={handleSubmit}
       />
+
     )}
 
-    {activeDialog === 'flashcards' && (
+    {activeDialog === DialogOption.flashcards && (
       <FlashcardDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
@@ -170,6 +217,29 @@ export function SidebarMenuGroup({
     )}
   </>
 );
+
+
+      {selectedFolder && (
+        <>
+          <RenameFolderDialog
+            open={isRenameDialogOpen}
+            onOpenChange={setIsRenameDialogOpen}
+            folderId={selectedFolder.id}
+            currentName={selectedFolder.name}
+            onSuccess={handleRenameSuccess}
+          />
+          <DeleteFolderDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            folderId={selectedFolder.id}
+            folderName={selectedFolder.name}
+            onSuccess={handleDeleteSuccess}
+          />
+        </>
+      )}
+    </>
+  );
+
 }
 
 const sidebarMenus = {
@@ -262,7 +332,7 @@ export default function LeftSidebar() {
 
   return (
     <div className="flex">
-      <div className="transition-all duration-300 ease-in-out fixed md:relative top-0 left-0 h-full z-[60] bg-background border-r">
+      <div className="transition-all duration-300 ease-in-out fixed md:relative top-0 left-0 h-full z-50 bg-background border-r">
         <Sidebar collapsible="icon">
           <SidebarGroup>
             <SidebarGroupContent>
