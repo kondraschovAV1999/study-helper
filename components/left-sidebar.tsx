@@ -1,14 +1,33 @@
 "use client";
-import { FolderOpen, Home, Plus, Book, Menu } from "lucide-react";
+import {
+  FolderOpen,
+  Home,
+  Plus,
+  Book,
+  Menu,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
+import { Folder as FolderIcon } from "lucide-react";
 import FlashcardsIcon from "@/components/flashcards-icon";
 import PracticeIcon from "@/components/practice-icon";
 import StudyGuideIcon from "@/components/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { FlashcardDialog } from "./flashcard-dialog";
+import { fetchSubFolders, createFolder } from "../app/actions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { RenameFolderDialog } from "./rename-folder-dialog";
+import { DeleteFolderDialog } from "./delete-folder-dialog";
 
 import {
   Sidebar,
-  SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -19,6 +38,7 @@ import {
 import NavComponent from "./nav-component";
 import ActionComponent, { ActionItem } from "./action-component";
 import { NavItem } from "./nav-component";
+import { CreateFolderDialog } from "./create-folder-dialog";
 
 export interface NavMenuItem {
   component: "nav";
@@ -32,6 +52,13 @@ export interface ActionMenuItem {
 
 export type MenuItem = NavMenuItem | ActionMenuItem;
 
+export enum DialogOption {
+  folder = "folder",
+  flashcards = "flashcards",
+  rename = "rename",
+  delete = "delete",
+}
+
 interface SidebarMenuProps {
   title: string;
   menuItems: MenuItem[];
@@ -43,17 +70,122 @@ export function SidebarMenuGroup({
   sidebarMenu: SidebarMenuProps;
 }) {
   const pathname = usePathname();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const [activeDialog, setActiveDialog] = useState<DialogOption | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>(
+    []
+  );
+
+  const handleSubmit = async (
+    folder_name: string,
+    parent_id: string = "00000000-0000-0000-0000-000000000000"
+  ) => {
+    const { success, message } = await createFolder(folder_name);
+
+    if (success) {
+      await loadFolders();
+    }
+    return { success, message };
+  };
+
+  const loadFolders = async () => {
+    const { success, message, content } = await fetchSubFolders("My Folders");
+
+    if (!success) {
+      console.error(message);
+      return;
+    }
+
+    if (content) {
+      setSubfolders(
+        content.map((f) => ({
+          id: f.folder_id,
+          name: f.folder_name,
+        }))
+      );
+    }
+
+    const handleFlashcardAction = async (type: "upload" | "manual") => {
+      if (type === "upload") {
+        // upload logic
+      } else {
+        // manual creation
+      }
+      setIsDialogOpen(false);
+    };
+  };
+
+  useEffect(() => {
+    loadFolders();
+  }, []);
+
+  const handleRenameSuccess = () => {
+    loadFolders();
+  };
+
+  const handleDeleteSuccess = () => {
+    loadFolders();
+  };
+
+  const menuItems = [...sidebarMenu.menuItems];
+  if (sidebarMenu.title === "My folders") {
+    subfolders.forEach((folder) => {
+      menuItems.unshift({
+        component: "nav",
+        item: {
+          title: folder.name,
+          href: `/folders/${folder.id}`,
+          icon: FolderIcon,
+          options: (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1 hover:bg-accent rounded-md">
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="z-[100] w-fit p-0">
+                <DropdownMenuItem
+                  className="flex items-center justify-center border border-border hover:bg-accent hover:!text-blue-300"
+                  onClick={() => {
+                    setSelectedFolder(folder);
+                    setActiveDialog(DialogOption.rename);
+                    setIsDialogOpen(true);
+                  }}
+                >
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex items-center justify-center  border border-border hover:bg-accent hover:!text-blue-300"
+                  onClick={() => {
+                    setSelectedFolder(folder);
+                    setActiveDialog(DialogOption.delete);
+                    setIsDialogOpen(true);
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ),
+        },
+      });
+    });
+  }
 
   return (
-    <SidebarGroup className="text-xl">
-      {sidebarMenu.title && (
-        <SidebarGroupLabel>{sidebarMenu.title}</SidebarGroupLabel>
-      )}
-      <SidebarGroupContent>
+    <>
+      <SidebarGroup className="!text-xl">
+        {/* ... existing group content ... */}
         <SidebarMenu>
-          {sidebarMenu.menuItems.map((menuItem) => (
+          {menuItems.map((menuItem) => (
             <SidebarMenuItem key={menuItem.item.title}>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild className="text-base">
                 {menuItem.component === "nav" ? (
                   <NavComponent
                     item={menuItem.item as NavItem}
@@ -61,7 +193,20 @@ export function SidebarMenuGroup({
                   />
                 ) : (
                   <ActionComponent
-                    item={menuItem.item as ActionItem}
+                    item={{
+                      ...(menuItem.item as ActionItem),
+                      action: () => {
+                        if (sidebarMenu.title === "My folders") {
+                          setActiveDialog(DialogOption.folder);
+                          setIsDialogOpen(true);
+                        } else if (menuItem.item.title === "Flashcards") {
+                          setActiveDialog(DialogOption.flashcards);
+                          setIsDialogOpen(true);
+                        } else {
+                          (menuItem.item as ActionItem).action(true);
+                        }
+                      },
+                    }}
                     isLoggedIn={true}
                   />
                 )}
@@ -69,8 +214,48 @@ export function SidebarMenuGroup({
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+      </SidebarGroup>
+
+      {activeDialog === DialogOption.folder && (
+        <CreateFolderDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSubmit={handleSubmit}
+        />
+      )}
+
+      {activeDialog === DialogOption.flashcards && (
+        <FlashcardDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onCreateFromUpload={() => handleFlashcardAction("upload")} // upload logic
+          onCreateManually={() => handleFlashcardAction("manual")} // manual creation logic
+        />
+      )}
+
+      {selectedFolder && (
+        <>
+          {activeDialog === DialogOption.rename && (
+            <RenameFolderDialog
+              open={isDialogOpen}
+              onOpenChange={setIsDialogOpen}
+              folderId={selectedFolder.id}
+              currentName={selectedFolder.name}
+              onSuccess={handleRenameSuccess}
+            />
+          )}
+          {activeDialog === DialogOption.delete && (
+            <DeleteFolderDialog
+              open={isDialogOpen}
+              onOpenChange={setIsDialogOpen}
+              folderId={selectedFolder.id}
+              folderName={selectedFolder.name}
+              onSuccess={handleDeleteSuccess}
+            />
+          )}
+        </>
+      )}
+    </>
   );
 }
 
@@ -89,22 +274,22 @@ const sidebarMenus = {
       {
         component: "nav",
         item: {
-          title: "Your library",
+          title: "My library",
           href: "#",
           icon: FolderOpen,
         },
       },
     ] as MenuItem[],
   },
-  new_folder: {
-    title: "Your folders",
+  folderItems: {
+    title: "My folders",
     menuItems: [
       {
         component: "action",
         item: {
-          title: "New folder",
+          title: "Create New",
           action: () => {},
-          icon: FolderOpen,
+          icon: Plus,
         },
       },
     ] as MenuItem[],
@@ -150,11 +335,12 @@ const sidebarMenus = {
 
 export default function LeftSidebar() {
   const { toggleSidebar } = useSidebar();
+  const [isFlashcardDialogOpen, setIsFlashcardDialogOpen] = useState(false);
 
   const renderSidebarMenuButton = () => (
     <SidebarMenuItem>
       <SidebarMenuButton onClick={toggleSidebar}>
-        <Menu />
+        <Menu className="!w-6 !h-6" />
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
@@ -163,7 +349,7 @@ export default function LeftSidebar() {
 
   return (
     <div className="flex">
-      <div className="transition-all duration-300 ease-in-out fixed md:relative top-0 left-0 h-full z-[60] bg-background border-r">
+      <div className="transition-all duration-300 ease-in-out fixed md:relative top-0 left-0 h-full z-50 bg-background border-r">
         <Sidebar collapsible="icon">
           <SidebarGroup>
             <SidebarGroupContent>
@@ -173,7 +359,7 @@ export default function LeftSidebar() {
 
           <SidebarMenuGroup sidebarMenu={sidebarMenus.navigation} />
           <Divider />
-          <SidebarMenuGroup sidebarMenu={sidebarMenus.new_folder} />
+          <SidebarMenuGroup sidebarMenu={sidebarMenus.folderItems} />
           <Divider />
           <SidebarMenuGroup sidebarMenu={sidebarMenus.learning} />
         </Sidebar>
@@ -181,7 +367,7 @@ export default function LeftSidebar() {
 
       <main className="flex-1 p-4">
         <button className="md:hidden mb-4" onClick={toggleSidebar}>
-          <Menu />
+          <Menu size={34} />
         </button>
       </main>
     </div>
