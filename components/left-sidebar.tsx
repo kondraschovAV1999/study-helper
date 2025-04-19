@@ -1,5 +1,5 @@
 "use client";
-import { FolderOpen, Home, Plus, Book, Menu } from "lucide-react";
+import { FolderOpen, Home, Plus, Book, Menu, MoreVertical } from "lucide-react";
 import { Folder as FolderIcon } from "lucide-react";
 import FlashcardsIcon from "@/components/flashcards-icon";
 import PracticeIcon from "@/components/practice-icon";
@@ -7,13 +7,14 @@ import StudyGuideIcon from "@/components/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { fetchSubFolders, createFolder } from "../app/actions";
 import {
-  fetchSubFolders,
-  Folder,
-  FolderInFolder,
-  createFolder,
-} from "../app/actions";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { RenameFolderDialog } from "./rename-folder-dialog";
 
 import {
   Sidebar,
@@ -54,6 +55,11 @@ export function SidebarMenuGroup({
 }) {
   const pathname = usePathname();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>(
     []
   );
@@ -92,6 +98,10 @@ export function SidebarMenuGroup({
     loadFolders();
   }, []);
 
+  const handleRenameSuccess = () => {
+    loadFolders();
+  };
+
   const menuItems = [...sidebarMenu.menuItems];
   if (sidebarMenu.title === "My folders") {
     subfolders.forEach((folder) => {
@@ -101,6 +111,26 @@ export function SidebarMenuGroup({
           title: folder.name,
           href: `/folders/${folder.id}`,
           icon: FolderIcon,
+          options: (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1 hover:bg-accent rounded-md">
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="z-[100] w-fit p-0">
+                <DropdownMenuItem
+                  className="flex items-center justify-center border border-border hover:bg-accent hover:!text-blue-300"
+                  onClick={() => {
+                    setSelectedFolder(folder);
+                    setIsRenameDialogOpen(true);
+                  }}
+                >
+                  Rename
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ),
         },
       });
     });
@@ -151,6 +181,16 @@ export function SidebarMenuGroup({
         onOpenChange={setIsDialogOpen}
         onSubmit={handleSubmit}
       />
+
+      {selectedFolder && (
+        <RenameFolderDialog
+          open={isRenameDialogOpen}
+          onOpenChange={setIsRenameDialogOpen}
+          folderId={selectedFolder.id}
+          currentName={selectedFolder.name}
+          onSuccess={handleRenameSuccess}
+        />
+      )}
     </>
   );
 }
@@ -244,7 +284,7 @@ export default function LeftSidebar() {
 
   return (
     <div className="flex">
-      <div className="transition-all duration-300 ease-in-out fixed md:relative top-0 left-0 h-full z-[60] bg-background border-r">
+      <div className="transition-all duration-300 ease-in-out fixed md:relative top-0 left-0 h-full z-50 bg-background border-r">
         <Sidebar collapsible="icon">
           <SidebarGroup>
             <SidebarGroupContent>
