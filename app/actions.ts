@@ -4,6 +4,12 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { FileToTextConverter } from "@/utils/file-converters/file-converter";
+import { PdfToTextConverter } from "@/utils/file-converters/pdf-converter";
+import { DocsxToTextConverter } from "@/utils/file-converters/docx-converter";
+import { PptxToTextConverter } from "@/utils/file-converters/pptx-converter";
+import { generateStudyGuide } from "@/utils/ai/generate-study-guide";
+import storeFile from "@/utils/file/store-file";
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
@@ -167,3 +173,272 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   return redirect("/login");
 };
+
+/**
+ * Retrieves the currently authenticated user from Supabase
+ *
+ * @returns Promise<User | null> - The authenticated user object or null if no user is authenticated
+ * @throws Error if there's an error retrieving the user
+ */
+export const getUser = async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return user;
+};
+
+const converterMap: Record<string, FileToTextConverter> = {
+  "application/pdf": new PdfToTextConverter(),
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    new DocsxToTextConverter(),
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+    new PptxToTextConverter(),
+};
+
+/**
+ * Creates a study guide from an uploaded file
+ *
+ * @param formData - Form data containing:
+ *   - folderId: The ID of the folder to store the files in
+ *   - title: The title of the study guide
+ *   - file: The file to generate the study guide from
+ *
+ * @returns Promise<{success: boolean, message: string}>
+ *   - success: Whether the operation was successful
+ *   - message: A description of the result or error
+ *
+ * The function:
+ * 1. Validates the user is authenticated
+ * 2. Converts the uploaded file to text using an appropriate converter
+ * 3. Generates an AI study guide from the text
+ * 4. Stores both the original and generated files in Supabase storage
+ * 5. Creates a study guide record linking the files
+ *
+ */
+export async function createStudyGuide(formData: FormData) {
+  const bucketName = "study-guide";
+  try {
+    const supabase = await createClient();
+    const user = await getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const folderId = formData.get("folderId") as string;
+    const title = formData.get("title") as string;
+    const formFile = formData.get("file") as File;
+
+    const buffer = Buffer.from(await formFile.arrayBuffer());
+    const converter = converterMap[formFile.type];
+
+    if (!converter) throw new Error("Unsupported file type");
+
+    const origFileId = await storeFile(formFile, bucketName, user.id, supabase);
+
+    const text = await converter.convert(buffer);
+    const studyGuide = await generateStudyGuide(text);
+    const studyGuideString = JSON.stringify(studyGuide);
+    const arrayBuffer = new TextEncoder().encode(studyGuideString);
+    const genFile = new File([arrayBuffer], `${formFile.name}-ai.json`, {
+      type: "application/json",
+    });
+
+    const genFileId = await storeFile(genFile, bucketName, user.id, supabase);
+
+    const { error: rpcError } = await supabase.rpc("create_study_guide", {
+      orig_file_id: origFileId,
+      gen_file_id: genFileId,
+      folder_id: folderId,
+      title: title,
+      orig_file_name: formFile.name,
+      gen_file_name: genFile.name,
+    });
+
+    if (rpcError) throw new Error(rpcError.message);
+
+    return {
+      success: true,
+      message: "Study guide created successfully",
+    };
+  } catch (error) {
+    console.error("Error creating study guide:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function createFolder(
+  folder_name: string,
+  parent_id: string = "00000000-0000-0000-0000-000000000000"
+) {
+  const supabase = await createClient();
+  if (parent_id === "00000000-0000-0000-0000-000000000000") {
+    const { data, error: err } = await supabase.rpc(
+      "get_folder_id_under_root",
+      {
+        target_folder_name: "My Folders",
+      }
+    );
+    if (err) {
+      return {
+        success: false,
+        message: err.message,
+      };
+    }
+    parent_id = data;
+  }
+
+  const { data, error } = await supabase.rpc("create_folder", {
+    folder_name,
+    parent_id,
+  });
+
+  if (error) {
+    console.error("Folder creation error: ", error);
+    if (error.code === "23505") {
+      return {
+        success: false,
+        message: "A folder with this name already exists",
+      };
+    }
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+
+  return {
+    success: true,
+    message: "Folder was successfully created",
+  };
+}
+
+export interface Folder {
+  id: string;
+}
+
+export interface FolderInFolder {
+  folder_id: string;
+  folders: Folder;
+  folder_name: string;
+}
+
+export async function fetchSubFolders(
+  folder_name: string,
+  parent_id: string = "00000000-0000-0000-0000-000000000000"
+): Promise<{
+  success: boolean;
+  message: string;
+  content: FolderInFolder[];
+}> {
+  const supabase = await createClient();
+  const { data: user_id, error: err_fetching_user } = await supabase.rpc(
+    "fetch_current_user_id"
+  );
+  if (err_fetching_user) {
+    return {
+      success: false,
+      message: err_fetching_user.message,
+      content: [],
+    };
+  }
+
+  if (parent_id === "00000000-0000-0000-0000-000000000000") {
+    const { data, error: err } = await supabase.rpc(
+      "get_folder_id_under_root",
+      {
+        target_folder_name: "My Folders",
+      }
+    );
+    if (err) {
+      return {
+        success: false,
+        content: [],
+        message: err.message,
+      };
+    }
+    parent_id = data;
+  }
+
+  const { data, error } = await supabase
+    .from("folder_in_folder")
+    .select("*")
+    .eq("user_id", user_id)
+    .eq("parent_id", parent_id);
+
+  if (error) {
+    return {
+      success: false,
+      content: [],
+      message: error.message,
+    };
+  }
+  return {
+    success: true,
+    message: "",
+    content: data as FolderInFolder[],
+  };
+}
+
+export async function renameFolder(
+  folder_id: string,
+  new_name: string
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("folder_in_folder")
+    .update({ folder_name: new_name })
+    .eq("folder_id", folder_id);
+
+  if (error) {
+    console.error("Folder rename error: ", error);
+    if (error.code === "23505") {
+      return {
+        success: false,
+        message: "A folder with this name already exists",
+      };
+    }
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+
+  return {
+    success: true,
+    message: "Folder was successfully renamed",
+  };
+}
+
+export async function deleteFolder(folder_id: string): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("folder").delete().eq("id", folder_id);
+
+  if (error) {
+    console.error("Folder deletion error: ", error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+
+  return {
+    success: true,
+    message: "Folder was successfully deleted",
+  };
+}
