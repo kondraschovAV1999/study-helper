@@ -1,5 +1,13 @@
 "use client";
-import { FolderOpen, Home, Plus, Book, Menu, MoreVertical, Trash2 } from "lucide-react";
+import {
+  FolderOpen,
+  Home,
+  Plus,
+  Book,
+  Menu,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
 import { Folder as FolderIcon } from "lucide-react";
 import FlashcardsIcon from "@/components/flashcards-icon";
 import PracticeIcon from "@/components/practice-icon";
@@ -45,10 +53,10 @@ export interface ActionMenuItem {
 export type MenuItem = NavMenuItem | ActionMenuItem;
 
 export enum DialogOption {
-  folder = 'folder',
-  flashcards = 'flashcards'
-  rename = 'rename',
-  delete = 'delete'
+  folder = "folder",
+  flashcards = "flashcards",
+  rename = "rename",
+  delete = "delete",
 }
 
 interface SidebarMenuProps {
@@ -65,8 +73,13 @@ export function SidebarMenuGroup({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [activeDialog, setActiveDialog] = useState<DialogOption | null>(null);
-  const [selectedFolder, setSelectedFolder] = useState<{ id: string; name: string } | null>(null);
-  const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>(
+    []
+  );
 
   const handleSubmit = async (
     folder_name: string,
@@ -97,8 +110,8 @@ export function SidebarMenuGroup({
       );
     }
 
-    const handleFlashcardAction = async (type: 'upload' | 'manual') => {
-      if (type === 'upload') {
+    const handleFlashcardAction = async (type: "upload" | "manual") => {
+      if (type === "upload") {
         // upload logic
       } else {
         // manual creation
@@ -141,15 +154,17 @@ export function SidebarMenuGroup({
                   onClick={() => {
                     setSelectedFolder(folder);
                     setActiveDialog(DialogOption.rename);
+                    setIsDialogOpen(true);
                   }}
                 >
                   Rename
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
+                  className="flex items-center justify-center  border border-border hover:bg-accent hover:!text-blue-300"
                   onClick={() => {
                     setSelectedFolder(folder);
                     setActiveDialog(DialogOption.delete);
+                    setIsDialogOpen(true);
                   }}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -165,14 +180,17 @@ export function SidebarMenuGroup({
 
   return (
     <>
-    <SidebarGroup className="!text-xl">
-      {/* ... existing group content ... */}
+      <SidebarGroup className="!text-xl">
+        {/* ... existing group content ... */}
         <SidebarMenu>
           {menuItems.map((menuItem) => (
             <SidebarMenuItem key={menuItem.item.title}>
               <SidebarMenuButton asChild className="text-base">
                 {menuItem.component === "nav" ? (
-                  <NavComponent item={menuItem.item as NavItem} pathname={pathname} />
+                  <NavComponent
+                    item={menuItem.item as NavItem}
+                    pathname={pathname}
+                  />
                 ) : (
                   <ActionComponent
                     item={{
@@ -196,50 +214,49 @@ export function SidebarMenuGroup({
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-    </SidebarGroup>
+      </SidebarGroup>
 
-    {activeDialog === DialogOption.folder && (
-      <CreateFolderDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSubmit={handleSubmit}
-      />
+      {activeDialog === DialogOption.folder && (
+        <CreateFolderDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSubmit={handleSubmit}
+        />
+      )}
 
-    )}
-
-    {activeDialog === DialogOption.flashcards && (
-      <FlashcardDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onCreateFromUpload={() => handleFlashcardAction('upload')} // upload logic
-        onCreateManually={() => handleFlashcardAction('manual')} // manual creation logic
-      />
-    )}
-  </>
-);
-
+      {activeDialog === DialogOption.flashcards && (
+        <FlashcardDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onCreateFromUpload={() => handleFlashcardAction("upload")} // upload logic
+          onCreateManually={() => handleFlashcardAction("manual")} // manual creation logic
+        />
+      )}
 
       {selectedFolder && (
         <>
-          <RenameFolderDialog
-            open={isRenameDialogOpen}
-            onOpenChange={setIsRenameDialogOpen}
-            folderId={selectedFolder.id}
-            currentName={selectedFolder.name}
-            onSuccess={handleRenameSuccess}
-          />
-          <DeleteFolderDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-            folderId={selectedFolder.id}
-            folderName={selectedFolder.name}
-            onSuccess={handleDeleteSuccess}
-          />
+          {activeDialog === DialogOption.rename && (
+            <RenameFolderDialog
+              open={isDialogOpen}
+              onOpenChange={setIsDialogOpen}
+              folderId={selectedFolder.id}
+              currentName={selectedFolder.name}
+              onSuccess={handleRenameSuccess}
+            />
+          )}
+          {activeDialog === DialogOption.delete && (
+            <DeleteFolderDialog
+              open={isDialogOpen}
+              onOpenChange={setIsDialogOpen}
+              folderId={selectedFolder.id}
+              folderName={selectedFolder.name}
+              onSuccess={handleDeleteSuccess}
+            />
+          )}
         </>
       )}
     </>
   );
-
 }
 
 const sidebarMenus = {
