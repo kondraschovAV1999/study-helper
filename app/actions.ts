@@ -323,43 +323,16 @@ export async function deleteFolder(
 }> {
   const supabase = await createClient();
   
-  const { data: folderData, error: fetchError } = await supabase
-    .from("folder_in_folder")
-    .select("folder_id")
-    .eq("folder_id", folder_id)
-    .single();
-
-  if (fetchError) {
-    console.error("Error fetching folder: ", fetchError);
-    return {
-      success: false,
-      message: fetchError.message,
-    };
-  }
-
-  const { error: folderInFolderError } = await supabase
-    .from("folder_in_folder")
-    .delete()
-    .eq("folder_id", folder_id);
-
-  if (folderInFolderError) {
-    console.error("Error deleting from folder_in_folder: ", folderInFolderError);
-    return {
-      success: false,
-      message: folderInFolderError.message,
-    };
-  }
-
-  const { error: folderError } = await supabase
+  const { error } = await supabase
     .from("folder")
     .delete()
     .eq("id", folder_id);
 
-  if (folderError) {
-    console.error("Error deleting from folder: ", folderError);
+  if (error) {
+    console.error("Folder deletion error: ", error);
     return {
       success: false,
-      message: folderError.message,
+      message: error.message,
     };
   }
 
