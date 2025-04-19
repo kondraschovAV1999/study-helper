@@ -272,7 +272,8 @@ export async function createStudyGuide(formData: FormData) {
       message: error instanceof Error ? error.message : "Unknown error",
     };
   }
-=======
+}
+
 export async function createFolder(
   folder_name: string,
   parent_id: string = "00000000-0000-0000-0000-000000000000"
@@ -301,7 +302,7 @@ export async function createFolder(
 
   if (error) {
     console.error("Folder creation error: ", error);
-    if (error.code === '23505') {
+    if (error.code === "23505") {
       return {
         success: false,
         message: "A folder with this name already exists",
@@ -394,7 +395,7 @@ export async function renameFolder(
   message: string;
 }> {
   const supabase = await createClient();
-  
+
   const { error } = await supabase
     .from("folder_in_folder")
     .update({ folder_name: new_name })
@@ -402,7 +403,7 @@ export async function renameFolder(
 
   if (error) {
     console.error("Folder rename error: ", error);
-    if (error.code === '23505') {
+    if (error.code === "23505") {
       return {
         success: false,
         message: "A folder with this name already exists",
@@ -420,18 +421,13 @@ export async function renameFolder(
   };
 }
 
-export async function deleteFolder(
-  folder_id: string
-): Promise<{
+export async function deleteFolder(folder_id: string): Promise<{
   success: boolean;
   message: string;
 }> {
   const supabase = await createClient();
-  
-  const { error } = await supabase
-    .from("folder")
-    .delete()
-    .eq("id", folder_id);
+
+  const { error } = await supabase.from("folder").delete().eq("id", folder_id);
 
   if (error) {
     console.error("Folder deletion error: ", error);
@@ -445,5 +441,4 @@ export async function deleteFolder(
     success: true,
     message: "Folder was successfully deleted",
   };
-
 }
