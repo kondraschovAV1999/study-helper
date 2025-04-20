@@ -11,6 +11,7 @@ import { PptxToTextConverter } from "@/utils/file-converters/pptx-converter";
 import { generateStudyGuide } from "@/utils/ai/generate-study-guide";
 import storeFile from "@/utils/file/store-file";
 import { v4 as uuidv4 } from "uuid";
+import deleteFromStorage from "@/utils/file/delete-from-storage";
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
@@ -294,7 +295,10 @@ export async function createStudyGuide({
       message: "Study guide created successfully",
     };
   } catch (error) {
-    console.error("Error creating study guide:", error); 
+    console.error("Error creating study guide:", error);
+    // rolling back object creation
+    if (origFileId) deleteFromStorage(origFileId, supabase);
+    if (genFileId) deleteFromStorage(genFileId, supabase);
     return {
       success: false,
       message: error instanceof Error ? error.message : "Unknown error",
