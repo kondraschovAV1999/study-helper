@@ -1,5 +1,6 @@
 import ai from "./create-ai";
 import { Type } from "@google/genai";
+import { createClient } from "@/utils/supabase/server";
 
 const DEFAULT_MODEL = "gemini-2.0-flash-lite";
 const SYSTEM_INSTRUCTIONS = `
@@ -49,4 +50,27 @@ export default async function generateFlashcards(
     message: `Number of flashcards to be generated is ${count}` + text,
   });
   return res as Flashcard[];
+}
+
+export async function createFlashcardSet(
+  text: string,
+  set_title: string,
+  p_folder_id?: string,
+  p_study_guide_id?: string
+) {
+  const supabase = await createClient();
+  const flashcards = await generateFlashcards(text);
+  let { data, error: creat_flashcard_set_err } = await supabase.rpc(
+    "create_flashcard_set",
+    {
+      flashcards,
+      p_folder_id,
+      p_study_guide_id,
+      set_title,
+    }
+  );
+
+  if (creat_flashcard_set_err) throw new Error(creat_flashcard_set_err.message);
+
+  return data;
 }
