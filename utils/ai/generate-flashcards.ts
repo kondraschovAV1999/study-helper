@@ -33,13 +33,10 @@ const FLASHCARD_SCHEMA = {
     required: ["question", "answer"],
   },
 };
-export default async function generateFlashcards({
-  text,
-  count = 20,
-}: {
-  text: string;
-  count?: number;
-}) {
+export default async function generateFlashcards(
+  text: string,
+  count: number = 20
+) {
   const chat = ai.chats.create({
     model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
     config: {
