@@ -2,14 +2,34 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, ListChecks, FileText, Upload } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { BookOpen, ListChecks, FileText, Upload, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { Input } from "./ui/input";
+import { createStudyGuide } from "@/app/actions";
+
+export enum MaterialType {
+  flashcards = "flashcards",
+  practice_test = "practice-test",
+  study_guide = "study-guide",
+}
 
 export function StudyGenerator() {
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [inputText, setInputText] = useState("");
-  const [materialType, setMaterialType] = useState<"flashcards" | "practice-test" | "study-guide">("flashcards");
+  const [title, setTitle] = useState("");
+  const [materialType, setMaterialType] = useState<MaterialType>(
+    MaterialType.flashcards
+  );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -17,53 +37,93 @@ export function StudyGenerator() {
     }
   };
 
-  const handleGenerate = () => {
-    console.log({
-      materialType,
-      text: inputText,
-      file: selectedFile
+  const handleGenerate = async () => {
+    setError("");
+    setSuccess("");
+    setIsLoading(true);
+    const { success, message } = await createStudyGuide({
+      title,
+      formFile: selectedFile,
+      inputText,
     });
+    setIsLoading(false);
+    if (!success) {
+      setError(message);
+      return;
+    }
+
+    setSuccess(message);
+    setError("");
+    setSelectedFile(null);
+    setInputText("");
+    setTitle("");
+    setMaterialType(MaterialType.flashcards);
   };
 
   return (
     <Card className="p-6">
-        <div className="flex items-center gap-4 mb-6">
-            <h2 className="text-xl font-semibold">Generate a </h2>
-            <div className="w-[220px]">
-            <Select 
-                value={materialType} 
-                onValueChange={(value: "flashcards" | "practice-test" | "study-guide") => 
-                setMaterialType(value)
-                }
-            >
-                <SelectTrigger>
-                <SelectValue asChild>
-                    <div className="flex items-center gap-2">
-                    {materialType === "flashcards" && <FileText className="h-4 w-4" />}
-                    {materialType === "practice-test" && <ListChecks className="h-4 w-4" />}
-                    {materialType === "study-guide" && <BookOpen className="h-4 w-4" />}
-                    <span>
-                        {materialType === "flashcards" && "Flashcard Set"}
-                        {materialType === "practice-test" && "Practice Test"}
-                        {materialType === "study-guide" && "Study Guide"}
-                    </span>
-                    </div>
-                </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                <SelectItem value="flashcards" className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" /> Flashcard Set
-                </SelectItem>
-                <SelectItem value="practice-test" className="flex items-center gap-2">
-                    <ListChecks className="h-4 w-4" /> Practice Test
-                </SelectItem>
-                <SelectItem value="study-guide" className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" /> Study Guide
-                </SelectItem>
-                </SelectContent>
-            </Select>
-            </div>
+      {error && <p className=" text-destructive">{error}</p>}
+      {success && <p className=" text-blue-400">{success}</p>}
+      <div className="flex items-center gap-4 mb-6">
+        <h2 className="text-xl font-semibold">Generate a </h2>
+        <div className="w-[220px]">
+          <Select
+            value={materialType}
+            onValueChange={(value: MaterialType) => setMaterialType(value)}
+          >
+            <SelectTrigger>
+              <SelectValue asChild>
+                <div className="flex items-center gap-2">
+                  {materialType === MaterialType.flashcards && (
+                    <FileText className="h-4 w-4" />
+                  )}
+                  {materialType === MaterialType.practice_test && (
+                    <ListChecks className="h-4 w-4" />
+                  )}
+                  {materialType === MaterialType.study_guide && (
+                    <BookOpen className="h-4 w-4" />
+                  )}
+                  <span>
+                    {materialType === MaterialType.flashcards &&
+                      "Flashcard Set"}
+                    {materialType === MaterialType.practice_test &&
+                      "Practice Test"}
+                    {materialType === MaterialType.study_guide && "Study Guide"}
+                  </span>
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="flashcards"
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" /> Flashcard Set
+              </SelectItem>
+              <SelectItem
+                value="practice-test"
+                className="flex items-center gap-2"
+              >
+                <ListChecks className="h-4 w-4" /> Practice Test
+              </SelectItem>
+              <SelectItem
+                value="study-guide"
+                className="flex items-center gap-2"
+              >
+                <BookOpen className="h-4 w-4" /> Study Guide
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+        <div className="block p-1">
+          <Input
+            required
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+      </div>
 
       <div className="space-y-6">
         <div>
@@ -71,9 +131,7 @@ export function StudyGenerator() {
             <Textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={
-                "Put your notes here, we'll do the rest."
-              }
+              placeholder={"Put your notes here, we'll do the rest."}
               className="min-h-[200px]"
             />
             <div className="absolute bottom-3 right-3 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
@@ -84,54 +142,63 @@ export function StudyGenerator() {
 
         {/* File Upload Section */}
         <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <input
-                type="file"
-                onChange={handleFileChange}
-                className="hidden"
-                id="file-upload"
-                accept=".pdf,.doc,.docx,.txt,.md,.pptx"
+              type="file"
+              onChange={handleFileChange}
+              className="hidden"
+              id="file-upload"
+              name="file"
+              accept=".pdf,.doc,.docx,.txt,.md,.pptx"
             />
-            <Button
-                variant="outline"
-                className="gap-2"
-                asChild
-            >
-                <label htmlFor="file-upload" className="cursor-pointer flex items-center">
+            <Button variant="outline" className="gap-2" asChild>
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer flex items-center"
+              >
                 <Upload className="h-4 w-4" />
                 Upload File
-                </label>
+              </label>
             </Button>
             {selectedFile && (
-                <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+              <span className="text-sm text-muted-foreground truncate max-w-[200px]">
                 {selectedFile.name}
-                </span>
+              </span>
             )}
-            </div>
+          </div>
 
-            {/* Right side - Action buttons */}
-            <div className="flex gap-3">
-            <Button 
-                variant="outline" 
-                onClick={() => {
+          {/* Right side - Action buttons */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
                 setInputText("");
                 setSelectedFile(null);
-                }}
-                disabled={!inputText && !selectedFile}
+              }}
+              disabled={!inputText && !selectedFile}
             >
-                Clear
+              Clear
             </Button>
-            <Button 
-                onClick={handleGenerate}
-                disabled={!inputText && !selectedFile}
+            <Button
+              onClick={handleGenerate}
+              disabled={isLoading || (!inputText && !selectedFile)}
             >
-                {materialType === "flashcards" && "Generate Flashcards"}
-                {materialType === "practice-test" && "Create Practice Test"}
-                {materialType === "study-guide" && "Generate Study Guide"}
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" /> // Show loader if isLoading is true
+              ) : (
+                <>
+                  {materialType === MaterialType.flashcards &&
+                    "Generate Flashcards"}
+                  {materialType === MaterialType.practice_test &&
+                    "Create Practice Test"}
+                  {materialType === MaterialType.study_guide &&
+                    "Generate Study Guide"}
+                </>
+              )}
             </Button>
-            </div>
+          </div>
         </div>
-    </div>
-</Card>
-);
+      </div>
+    </Card>
+  );
 }
