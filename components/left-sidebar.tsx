@@ -6,6 +6,7 @@ import StudyGuideIcon from "@/components/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useState, useEffect } from "react";
 import { fetchSubFolders } from "../app/actions";
+import { DialogOption, MenuItem } from "@/types/left-side-bar";
 
 import {
   Sidebar,
@@ -17,11 +18,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { FolderMenuGroup } from "./folder-menu-group";
-import {
-  DialogOption,
-  MenuItem,
-  SidebarMenuGroup,
-} from "./side-bar-menu-group";
+import { SidebarMenuGroup } from "./side-bar-menu-group";
 
 const sidebarMenus = {
   navigation: {

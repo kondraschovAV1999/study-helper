@@ -1,10 +1,4 @@
-import { JSX } from "react";
-
-export interface ActionItem {
-  title: string;
-  action: (isLoggedIn: boolean) => void;
-  icon: JSX.ElementType;
-}
+import { ActionItem } from "@/types/left-side-bar";
 
 const ActionComponent = ({
   item,

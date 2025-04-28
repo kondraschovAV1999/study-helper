@@ -22,11 +22,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import NavComponent from "./nav-component";
-import ActionComponent, { ActionItem } from "./action-component";
-import { NavItem } from "./nav-component";
+import ActionComponent from "./action-component";
+import { NavItem, ActionItem, DialogOption } from "@/types/left-side-bar";
 import { CreateFolderDialog } from "./create-folder-dialog";
-
-import { SidebarMenuProps, DialogOption } from "./left-sidebar";
+import { SidebarMenuProps } from "./side-bar-menu-group";
 
 export interface FolderMenuProps {
   folders: { id: string; name: string }[];
@@ -65,10 +64,14 @@ export function FolderMenuGroup({
     folder_name: string,
     parent_id: string = "00000000-0000-0000-0000-000000000000"
   ) => {
-    const { success, message } = await createFolder(folder_name);
+    const {
+      success,
+      message,
+      content: newFolder,
+    } = await createFolder(folder_name);
 
-    if (success) {
-      //   await loadFolders();
+    if (success && newFolder) {
+      onFoldersChange([...folders, newFolder]);
     }
     return { success, message };
   };

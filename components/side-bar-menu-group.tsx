@@ -12,28 +12,14 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import NavComponent from "./nav-component";
-import ActionComponent, { ActionItem } from "./action-component";
-import { NavItem } from "./nav-component";
+import ActionComponent from "./action-component";
 import { DialogProps } from "./folder-menu-group";
-
-export interface NavMenuItem {
-  component: "nav";
-  item: NavItem;
-}
-
-export interface ActionMenuItem {
-  component: "action";
-  item: ActionItem;
-}
-
-export type MenuItem = NavMenuItem | ActionMenuItem;
-
-export enum DialogOption {
-  folder = "folder",
-  flashcards = "flashcards",
-  rename = "rename",
-  delete = "delete",
-}
+import {
+  ActionItem,
+  NavItem,
+  MenuItem,
+  DialogOption,
+} from "@/types/left-side-bar";
 
 export interface SidebarMenuProps {
   title: string;
