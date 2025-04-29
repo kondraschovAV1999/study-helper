@@ -6,7 +6,6 @@ import {
   Book,
   Menu,
   MoreVertical,
-  Trash2,
 } from "lucide-react";
 import { Folder as FolderIcon } from "lucide-react";
 import FlashcardsIcon from "@/components/flashcards-icon";
@@ -17,14 +16,9 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FlashcardDialog } from "./flashcard-dialog";
 import { fetchSubFolders, createFolder } from "../app/actions";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { RenameFolderDialog } from "./rename-folder-dialog";
 import { DeleteFolderDialog } from "./delete-folder-dialog";
+import OperationsFolder from "./operations-folder";
 
 import {
   Sidebar,
@@ -139,39 +133,20 @@ export function SidebarMenuGroup({
         component: "nav",
         item: {
           title: folder.name,
-          href: `/folders/${folder.id}`,
+          href: `/protected/folders/${folder.id}`,
           icon: FolderIcon,
           options: (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <OperationsFolder
+              folder={folder}
+              setSelectedFolder={setSelectedFolder}
+              setActiveDialog={setActiveDialog}
+              setIsDialogOpen={setIsDialogOpen}
+              Trigger={() => (
                 <button className="p-1 hover:bg-accent rounded-md">
                   <MoreVertical className="h-4 w-4" />
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="z-[100] w-fit p-0">
-                <DropdownMenuItem
-                  className="flex items-center justify-center border border-border hover:bg-accent hover:!text-blue-300"
-                  onClick={() => {
-                    setSelectedFolder(folder);
-                    setActiveDialog(DialogOption.rename);
-                    setIsDialogOpen(true);
-                  }}
-                >
-                  Rename
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="flex items-center justify-center  border border-border hover:bg-accent hover:!text-blue-300"
-                  onClick={() => {
-                    setSelectedFolder(folder);
-                    setActiveDialog(DialogOption.delete);
-                    setIsDialogOpen(true);
-                  }}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )}
+            />
           ),
         },
       });
