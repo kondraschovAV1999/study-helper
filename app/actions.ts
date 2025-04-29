@@ -15,6 +15,7 @@ import generateFlashcards, {
 import storeFile from "@/utils/file/store-file";
 import { v4 as uuidv4 } from "uuid";
 import deleteFromStorage from "@/utils/file/delete-from-storage";
+import { FolderInFolder } from "@/types/folder";
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
@@ -431,12 +432,16 @@ export async function createFolder(
       return {
         success: false,
         message: err.message,
+        content: null,
       };
     }
     parent_id = data;
   }
 
-  const { data, error } = await supabase.rpc("create_folder", {
+  const {
+    data: { folder_name: returned_name, folder_id },
+    error,
+  } = await supabase.rpc("create_folder", {
     folder_name,
     parent_id,
   });
@@ -447,28 +452,23 @@ export async function createFolder(
       return {
         success: false,
         message: "A folder with this name already exists",
+        content: null,
       };
     }
     return {
       success: false,
       message: error.message,
+      content: null,
     };
   }
+  const id = folder_id as string;
+  const name = returned_name as string;
 
   return {
     success: true,
     message: "Folder was successfully created",
+    content: { id, name },
   };
-}
-
-export interface Folder {
-  id: string;
-}
-
-export interface FolderInFolder {
-  folder_id: string;
-  folders: Folder;
-  folder_name: string;
 }
 
 export async function fetchSubFolders(

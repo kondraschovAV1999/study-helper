@@ -1,13 +1,5 @@
+import { NavItem } from "@/types/left-side-bar";
 import Link from "next/link";
-import { JSX } from "react";
-import { LucideIcon } from "lucide-react";
-
-export interface NavItem {
-  title: string;
-  href: string;
-  icon: LucideIcon;
-  options?: React.ReactNode;
-}
 
 const triggerStyle = (isActive: boolean) => {
   return `

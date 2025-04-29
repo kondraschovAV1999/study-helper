@@ -1,24 +1,14 @@
 "use client";
-import {
-  FolderOpen,
-  Home,
-  Plus,
-  Book,
-  Menu,
-  MoreVertical,
-} from "lucide-react";
-import { Folder as FolderIcon } from "lucide-react";
+
+import { FolderOpen, Home, Plus, Book, Menu } from "lucide-react";
 import FlashcardsIcon from "@/components/flashcards-icon";
 import PracticeIcon from "@/components/practice-icon";
 import StudyGuideIcon from "@/components/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { FlashcardDialog } from "./flashcard-dialog";
-import { fetchSubFolders, createFolder } from "../app/actions";
-import { RenameFolderDialog } from "./rename-folder-dialog";
-import { DeleteFolderDialog } from "./delete-folder-dialog";
-import OperationsFolder from "./operations-folder";
+
+import { fetchSubFolders } from "../app/actions";
+import { DialogOption, MenuItem } from "@/types/left-side-bar";
 
 import {
   Sidebar,
@@ -29,210 +19,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import NavComponent from "./nav-component";
-import ActionComponent, { ActionItem } from "./action-component";
-import { NavItem } from "./nav-component";
-import { CreateFolderDialog } from "./create-folder-dialog";
 
-export interface NavMenuItem {
-  component: "nav";
-  item: NavItem;
-}
-
-export interface ActionMenuItem {
-  component: "action";
-  item: ActionItem;
-}
-
-export type MenuItem = NavMenuItem | ActionMenuItem;
-
-export enum DialogOption {
-  folder = "folder",
-  flashcards = "flashcards",
-  rename = "rename",
-  delete = "delete",
-}
-
-interface SidebarMenuProps {
-  title: string;
-  menuItems: MenuItem[];
-}
-
-export function SidebarMenuGroup({
-  sidebarMenu,
-}: {
-  sidebarMenu: SidebarMenuProps;
-}) {
-  const pathname = usePathname();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const [activeDialog, setActiveDialog] = useState<DialogOption | null>(null);
-  const [selectedFolder, setSelectedFolder] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-  const [subfolders, setSubfolders] = useState<{ id: string; name: string }[]>(
-    []
-  );
-
-  const handleSubmit = async (
-    folder_name: string,
-    parent_id: string = "00000000-0000-0000-0000-000000000000"
-  ) => {
-    const { success, message } = await createFolder(folder_name);
-
-    if (success) {
-      await loadFolders();
-    }
-    return { success, message };
-  };
-
-  const loadFolders = async () => {
-    const { success, message, content } = await fetchSubFolders("My Folders");
-
-    if (!success) {
-      console.error(message);
-      return;
-    }
-
-    if (content) {
-      setSubfolders(
-        content.map((f) => ({
-          id: f.folder_id,
-          name: f.folder_name,
-        }))
-      );
-    }
-
-    const handleFlashcardAction = async (type: "upload" | "manual") => {
-      if (type === "upload") {
-        // upload logic
-      } else {
-        // manual creation
-      }
-      setIsDialogOpen(false);
-    };
-  };
-
-  useEffect(() => {
-    loadFolders();
-  }, []);
-
-  const handleRenameSuccess = () => {
-    loadFolders();
-  };
-
-  const handleDeleteSuccess = () => {
-    loadFolders();
-  };
-
-  const menuItems = [...sidebarMenu.menuItems];
-  if (sidebarMenu.title === "My folders") {
-    subfolders.forEach((folder) => {
-      menuItems.unshift({
-        component: "nav",
-        item: {
-          title: folder.name,
-          href: `/protected/folders/${folder.id}`,
-          icon: FolderIcon,
-          options: (
-            <OperationsFolder
-              folder={folder}
-              setSelectedFolder={setSelectedFolder}
-              setActiveDialog={setActiveDialog}
-              setIsDialogOpen={setIsDialogOpen}
-              Trigger={() => (
-                <button className="p-1 hover:bg-accent rounded-md">
-                  <MoreVertical className="h-4 w-4" />
-                </button>
-              )}
-            />
-          ),
-        },
-      });
-    });
-  }
-
-  return (
-    <>
-      <SidebarGroup className="!text-xl">
-        {/* ... existing group content ... */}
-        <SidebarMenu>
-          {menuItems.map((menuItem) => (
-            <SidebarMenuItem key={menuItem.item.title}>
-              <SidebarMenuButton asChild className="text-base">
-                {menuItem.component === "nav" ? (
-                  <NavComponent
-                    item={menuItem.item as NavItem}
-                    pathname={pathname}
-                  />
-                ) : (
-                  <ActionComponent
-                    item={{
-                      ...(menuItem.item as ActionItem),
-                      action: () => {
-                        if (sidebarMenu.title === "My folders") {
-                          setActiveDialog(DialogOption.folder);
-                          setIsDialogOpen(true);
-                        } else if (menuItem.item.title === "Flashcards") {
-                          setActiveDialog(DialogOption.flashcards);
-                          setIsDialogOpen(true);
-                        } else {
-                          (menuItem.item as ActionItem).action(true);
-                        }
-                      },
-                    }}
-                    isLoggedIn={true}
-                  />
-                )}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroup>
-
-      {activeDialog === DialogOption.folder && (
-        <CreateFolderDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onSubmit={handleSubmit}
-        />
-      )}
-
-      {activeDialog === DialogOption.flashcards && (
-        <FlashcardDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onCreateFromUpload={() => handleFlashcardAction("upload")} // upload logic
-          onCreateManually={() => handleFlashcardAction("manual")} // manual creation logic
-        />
-      )}
-
-      {selectedFolder && (
-        <>
-          {activeDialog === DialogOption.rename && (
-            <RenameFolderDialog
-              open={isDialogOpen}
-              onOpenChange={setIsDialogOpen}
-              folderId={selectedFolder.id}
-              currentName={selectedFolder.name}
-              onSuccess={handleRenameSuccess}
-            />
-          )}
-          {activeDialog === DialogOption.delete && (
-            <DeleteFolderDialog
-              open={isDialogOpen}
-              onOpenChange={setIsDialogOpen}
-              folderId={selectedFolder.id}
-              folderName={selectedFolder.name}
-              onSuccess={handleDeleteSuccess}
-            />
-          )}
-        </>
-      )}
-    </>
-  );
-}
+import { FolderMenuGroup } from "./folder-menu-group";
+import { SidebarMenuGroup } from "./side-bar-menu-group";
 
 const sidebarMenus = {
   navigation: {
@@ -311,6 +100,27 @@ const sidebarMenus = {
 export default function LeftSidebar() {
   const { toggleSidebar } = useSidebar();
   const [isFlashcardDialogOpen, setIsFlashcardDialogOpen] = useState(false);
+  const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
+  const [loadingFolders, setLoadingFolders] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [activeDialog, setActiveDialog] = useState<DialogOption | null>(null);
+
+  useEffect(() => {
+    const loadFolders = async () => {
+      const { success, content } = await fetchSubFolders("My Folders");
+      if (success && content) {
+        setFolders(
+          content.map((f) => ({
+            id: f.folder_id,
+            name: f.folder_name,
+          }))
+        );
+      }
+      setLoadingFolders(false);
+    };
+
+    loadFolders();
+  }, []);
 
   const renderSidebarMenuButton = () => (
     <SidebarMenuItem>
@@ -332,11 +142,40 @@ export default function LeftSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <SidebarMenuGroup sidebarMenu={sidebarMenus.navigation} />
+          <SidebarMenuGroup
+            sidebarMenu={sidebarMenus.navigation}
+            dialogProps={{
+              open: dialogOpen,
+              setOpen: setDialogOpen,
+              active: activeDialog,
+              setActive: setActiveDialog,
+            }}
+          />
           <Divider />
-          <SidebarMenuGroup sidebarMenu={sidebarMenus.folderItems} />
+          <FolderMenuGroup
+            sidebarMenu={sidebarMenus.folderItems}
+            dialogProps={{
+              open: dialogOpen,
+              setOpen: setDialogOpen,
+              active: activeDialog,
+              setActive: setActiveDialog,
+            }}
+            folderMenuProps={{
+              folders,
+              loadingFolders,
+              onFoldersChange: setFolders,
+            }}
+          />
           <Divider />
-          <SidebarMenuGroup sidebarMenu={sidebarMenus.learning} />
+          <SidebarMenuGroup
+            sidebarMenu={sidebarMenus.learning}
+            dialogProps={{
+              open: dialogOpen,
+              setOpen: setDialogOpen,
+              active: activeDialog,
+              setActive: setActiveDialog,
+            }}
+          />
         </Sidebar>
       </div>
 

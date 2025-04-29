@@ -13,12 +13,7 @@ import { BookOpen, ListChecks, FileText, Upload, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Input } from "./ui/input";
 import { createStudyGuide } from "@/app/actions";
-
-export enum MaterialType {
-  flashcards = "flashcards",
-  practice_test = "practice-test",
-  study_guide = "study-guide",
-}
+import { MaterialType } from "@/types/stugy-generator";
 
 export function StudyGenerator() {
   const [error, setError] = useState("");
