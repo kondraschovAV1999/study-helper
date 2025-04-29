@@ -1,10 +1,12 @@
 "use client";
+
 import { FolderOpen, Home, Plus, Book, Menu } from "lucide-react";
 import FlashcardsIcon from "@/components/flashcards-icon";
 import PracticeIcon from "@/components/practice-icon";
 import StudyGuideIcon from "@/components/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useState, useEffect } from "react";
+
 import { fetchSubFolders } from "../app/actions";
 import { DialogOption, MenuItem } from "@/types/left-side-bar";
 
@@ -17,6 +19,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+
 import { FolderMenuGroup } from "./folder-menu-group";
 import { SidebarMenuGroup } from "./side-bar-menu-group";
 

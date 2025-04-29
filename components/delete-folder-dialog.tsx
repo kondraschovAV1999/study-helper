@@ -35,8 +35,8 @@ export function DeleteFolderDialog({
     setError(null);
     const result = await deleteFolder(folderId);
     if (result.success) {
-      onOpenChange(false);
       onSuccess();
+      onOpenChange(false);
     } else {
       setError(result.message || "Failed to delete folder");
     }
@@ -57,7 +57,8 @@ export function DeleteFolderDialog({
         <DialogHeader>
           <DialogTitle>Delete Folder</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete the folder "{folderName}" and all of its contents? This action cannot be undone.
+            Are you sure you want to delete the folder "{folderName}" and all of
+            its contents? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -82,4 +83,4 @@ export function DeleteFolderDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}
