@@ -20,7 +20,11 @@ export enum MaterialType {
   study_guide = "study-guide",
 }
 
-export function StudyGenerator() {
+export function StudyGenerator({
+  folders,
+}: {
+  folders: { id: string; name: string }[];
+}) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [inputText, setInputText] = useState("");
@@ -30,6 +34,9 @@ export function StudyGenerator() {
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedFolderId, setSelectedFolderId] = useState<
+    string | undefined
+  >();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -122,6 +129,30 @@ export function StudyGenerator() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+        </div>
+        <div>
+          {folders.length !== 0 && (
+            <Select
+              value={selectedFolderId}
+              onValueChange={setSelectedFolderId}
+            >
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Select a Folder" />
+              </SelectTrigger>
+              <SelectContent>
+                {folders.map((folder) => (
+                  <SelectItem key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </SelectItem>
+                ))}
+                {folders.length === 0 && (
+                  <SelectItem disabled value="">
+                    No folders available
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 
