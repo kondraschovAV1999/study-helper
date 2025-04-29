@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DialogOption } from "./left-sidebar";
+import { DialogOption } from "@/types/left-side-bar";
 import { JSX } from "react";
 
 export type Folder = {

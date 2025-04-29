@@ -105,7 +105,7 @@ export function FolderMenuGroup({
         component: "nav",
         item: {
           title: folder.name,
-          href: `/folders/${folder.id}`,
+          href: `/protected/folders/${folder.id}`,
           icon: FolderIcon,
           options: (
             <DropdownMenu>

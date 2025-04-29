@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Ellipsis } from "lucide-react";
 import { useState, useEffect } from "react";
-import { DialogOption } from "@/components/left-sidebar";
+import { DialogOption } from "../../../../types/left-side-bar";
 import { Folder } from "@/components/operations-folder";
 import OperationsFolder from "@/components/operations-folder";
 import { RenameFolderDialog } from "@/components/rename-folder-dialog";
