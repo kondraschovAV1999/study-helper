@@ -1,13 +1,13 @@
-import { StudyGuide } from "@/components/operations-study-guide";
 import StudyGuideComponent from "@/components/study-guide";
 import { mock_study_guide } from "@/data/mock-study-guide";
-import { StudyGuidePart } from "@/utils/ai/generate-study-guide";
-export default function StudyGuidePage({
-  searchParams,
+import { StudyGuide, StudyGuidePart } from "@/types/study-guide";
+
+export default async function StudyGuidePage({
+  params,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: { study_guide_id: string };
 }) {
-  const studyGuideId = searchParams?.study_guide_id as string;
+  const { study_guide_id: studyGuideId } = await params;
   console.log(studyGuideId);
   const content = mock_study_guide.content as StudyGuidePart[];
   const studyGuide: StudyGuide = {

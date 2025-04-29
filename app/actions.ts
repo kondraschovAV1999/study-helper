@@ -13,7 +13,7 @@ import { createFlashcardSet } from "@/utils/ai/generate-flashcards";
 import storeFile from "@/utils/file/store-file";
 import { v4 as uuidv4 } from "uuid";
 import deleteFromStorage from "@/utils/file/delete-from-storage";
-import { FolderInFolder } from "@/types/folder";
+import { Folder, FolderInFolder } from "@/types/folder";
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
@@ -623,9 +623,7 @@ export async function fetchUserFolders() {
     if (error) {
       throw new Error("Error fetching user's folders: ", error);
     }
-    const folders: { id: string; name: string }[] = data.map(
-      ({ user, ...rest }) => rest
-    );
+    const folders: Folder[] = data.map(({ user, ...rest }) => rest);
     return {
       success: true,
       message: "Success",

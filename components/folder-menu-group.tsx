@@ -26,10 +26,10 @@ import ActionComponent from "./action-component";
 import { NavItem, ActionItem, DialogOption } from "@/types/left-side-bar";
 import { CreateFolderDialog } from "./create-folder-dialog";
 import { SidebarMenuProps } from "./side-bar-menu-group";
+import { Folder } from "@/types/folder";
 
 export interface FolderMenuProps {
   folders: { id: string; name: string }[];
-  loadingFolders: boolean;
   onFoldersChange: (folders: { id: string; name: string }[]) => void;
 }
 
@@ -42,7 +42,7 @@ export interface DialogProps {
 
 export function FolderMenuGroup({
   sidebarMenu,
-  folderMenuProps: { folders = [], loadingFolders = false, onFoldersChange },
+  folderMenuProps: { folders = [], onFoldersChange },
   dialogProps: {
     open: dialogOpen,
     setOpen: setDialogOpen,
@@ -55,10 +55,7 @@ export function FolderMenuGroup({
   dialogProps: DialogProps;
 }) {
   const pathname = usePathname();
-  const [selectedFolder, setSelectedFolder] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
 
   const handleSubmit = async (
     folder_name: string,
@@ -76,73 +73,54 @@ export function FolderMenuGroup({
     return { success, message };
   };
 
-  const handleRenameSuccess = (folderId: string, newName: string) => {
-    onFoldersChange(
-      folders.map((folder) =>
-        folder.id === folderId ? { ...folder, name: newName } : folder
-      )
-    );
-  };
-
   const handleDeleteSuccess = (folderId: string) => {
     onFoldersChange(folders.filter((folder) => folder.id !== folderId));
   };
 
   const menuItems = [...sidebarMenu.menuItems];
 
-  if (loadingFolders) {
+  folders.forEach((folder) => {
     menuItems.unshift({
       component: "nav",
       item: {
-        title: "Loading...",
-        href: "#",
-        icon: Loader2,
+        title: folder.name,
+        href: `/protected/folders/${folder.id}`,
+        icon: FolderIcon,
+        options: (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1 hover:bg-accent rounded-md">
+                <MoreVertical className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="z-[100] w-fit p-0">
+              <DropdownMenuItem
+                className="flex items-center justify-center border border-border hover:bg-accent hover:!text-blue-300"
+                onClick={() => {
+                  setSelectedFolder(folder);
+                  setActiveDialog(DialogOption.rename);
+                  setDialogOpen(true);
+                }}
+              >
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex items-center justify-center  border border-border hover:bg-accent hover:!text-blue-300"
+                onClick={() => {
+                  setSelectedFolder(folder);
+                  setActiveDialog(DialogOption.delete);
+                  setDialogOpen(true);
+                }}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
       },
     });
-  } else {
-    folders.forEach((folder) => {
-      menuItems.unshift({
-        component: "nav",
-        item: {
-          title: folder.name,
-          href: `/protected/folders/${folder.id}`,
-          icon: FolderIcon,
-          options: (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="p-1 hover:bg-accent rounded-md">
-                  <MoreVertical className="h-4 w-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="z-[100] w-fit p-0">
-                <DropdownMenuItem
-                  className="flex items-center justify-center border border-border hover:bg-accent hover:!text-blue-300"
-                  onClick={() => {
-                    setSelectedFolder(folder);
-                    setActiveDialog(DialogOption.rename);
-                    setDialogOpen(true);
-                  }}
-                >
-                  Rename
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="flex items-center justify-center  border border-border hover:bg-accent hover:!text-blue-300"
-                  onClick={() => {
-                    setSelectedFolder(folder);
-                    setActiveDialog(DialogOption.delete);
-                    setDialogOpen(true);
-                  }}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ),
-        },
-      });
-    });
-  }
+  });
 
   return (
     <>
@@ -187,11 +165,8 @@ export function FolderMenuGroup({
             <RenameFolderDialog
               open={dialogOpen}
               onOpenChange={setDialogOpen}
-              folderId={selectedFolder.id}
-              currentName={selectedFolder.name}
-              onSuccess={() =>
-                handleRenameSuccess(selectedFolder.id, selectedFolder.name)
-              }
+              folder={selectedFolder}
+              onSuccess={() => {}}
             />
           )}
           {selectedFolder && activeDialog === DialogOption.delete && (

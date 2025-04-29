@@ -1,15 +1,9 @@
 import ai from "./create-ai";
 import chunkText from "./chunk-text";
 import { Type } from "@google/genai";
+import { StudyGuidePart } from "@/types/study-guide";
 
 const DEFAULT_MODEL = "gemini-2.0-flash-lite";
-
-export type StudyGuidePart = {
-  heading: string;
-  summary: string;
-  bulletPoints: string[];
-  examples: string[];
-};
 
 const STUDY_GUIDE_SCHEMA = {
   type: Type.ARRAY,

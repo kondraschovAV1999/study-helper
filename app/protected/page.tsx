@@ -8,6 +8,7 @@ import { fetchUserFolders } from "../actions";
 
 export default async function ProtectedPage() {
   const { content: folders } = await fetchUserFolders();
+
   return (
     <div className="min-h-screen bg-background">
       <LandingHeader isProtectedPage={true} />
@@ -19,7 +20,7 @@ export default async function ProtectedPage() {
           } as React.CSSProperties
         }
       >
-        <LeftSidebar />
+        <LeftSidebar initialFolders={folders} />
         <main className="container mx-auto p-4 flex-1 flex flex-col">
           <div className="max-w-full mx-auto flex-1">
             <div>
