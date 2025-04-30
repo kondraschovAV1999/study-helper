@@ -13,11 +13,11 @@ import { createFlashcardSet } from "@/utils/ai/generate-flashcards";
 import storeFile from "@/utils/file/store-file";
 import { v4 as uuidv4 } from "uuid";
 import deleteFromStorage from "@/utils/file/delete-from-storage";
-import { FolderInFolder } from "@/types/folder";
+import { Folder, FolderInFolder } from "@/types/folder";
 import { fetchFolderIdUnderRoot } from "@/utils/folders/fetch-folde-id-under-root";
-import { folder } from "jszip";
 import { MaterialType } from "@/types/stugy-generator";
-
+import { fetchGenFileInfo } from "@/utils/study-guide/fetch-gen-file";
+import { StudyGuide, StudyGuidePart } from "@/types/study-guide";
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
@@ -696,6 +696,55 @@ export async function fetchRecents() {
       success: false,
       message: error instanceof Error ? error.message : "Unknown error",
       content: [],
+    };
+  }
+}
+
+export async function fetchStudyGuide(id: string) {
+  const supabase = await createClient();
+  try {
+    const { data, error: fetch_err } = await supabase
+      .from("study_guide")
+      .select("title")
+      .eq("id", id)
+      .single();
+    const title = data?.title as string;
+
+    if (fetch_err) throw new Error(fetch_err.message);
+
+    const genFileInfo = await fetchGenFileInfo(id);
+    if (!genFileInfo)
+      throw new Error(`Didn't find gen file for stugy guide with id=${id}`);
+
+    const { data: file, error: file_err } = await supabase.storage
+      .from(genFileInfo.bucket)
+      .download(genFileInfo.name);
+
+    if (file_err) throw new Error(file_err.message);
+
+    const content: StudyGuidePart[] = JSON.parse(await file.text()).content;
+    const studyGuide: StudyGuide = {
+      id,
+      title,
+      content,
+    };
+    return {
+      success: true,
+      message: "Successfully fetched study guide",
+      content: studyGuide,
+    };
+  } catch (error) {
+    console.log(error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return {
+      success: false,
+      message: errorMessage,
+      content: {
+        id,
+        errorMessage,
+        content: [],
+      },
     };
   }
 }
