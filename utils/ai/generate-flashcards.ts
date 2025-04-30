@@ -1,6 +1,7 @@
 import ai from "./create-ai";
 import { Type } from "@google/genai";
 import { createClient } from "@/utils/supabase/server";
+import { Flashcard } from "@/types/flashcard";
 
 const DEFAULT_MODEL = "gemini-2.0-flash-lite";
 const SYSTEM_INSTRUCTIONS = `
@@ -9,11 +10,6 @@ const SYSTEM_INSTRUCTIONS = `
   Your task is to create a set of flashcards from provided text.
   Flashcards should cover different topics from the provided text.
 `.trim();
-
-export type Flashcard = {
-  question: string;
-  answer: string;
-};
 
 const FLASHCARD_SCHEMA = {
   type: Type.ARRAY,

@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Ellipsis } from "lucide-react";
 import { useState, useEffect } from "react";
 import { DialogOption } from "../../../../types/left-side-bar";
-import { Folder } from "@/components/operations-folder";
 import OperationsFolder from "@/components/operations-folder";
 import { RenameFolderDialog } from "@/components/rename-folder-dialog";
 import { DeleteFolderDialog } from "@/components/delete-folder-dialog";
@@ -18,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useParams, useRouter } from "next/navigation";
+import { Folder } from "@/types/folder";
 
 export default function FolderPage() {
   const router = useRouter();

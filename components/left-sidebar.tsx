@@ -6,8 +6,6 @@ import PracticeIcon from "@/components/practice-icon";
 import StudyGuideIcon from "@/components/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useState, useEffect } from "react";
-
-import { fetchSubFolders } from "../app/actions";
 import { DialogOption, MenuItem } from "@/types/left-side-bar";
 
 import {
@@ -22,6 +20,7 @@ import {
 
 import { FolderMenuGroup } from "./folder-menu-group";
 import { SidebarMenuGroup } from "./side-bar-menu-group";
+import { Folder } from "@/types/folder";
 
 const sidebarMenus = {
   navigation: {
@@ -97,30 +96,17 @@ const sidebarMenus = {
   },
 };
 
-export default function LeftSidebar() {
+export default function LeftSidebar({
+  initialFolders,
+}: {
+  initialFolders: Folder[];
+}) {
   const { toggleSidebar } = useSidebar();
   const [isFlashcardDialogOpen, setIsFlashcardDialogOpen] = useState(false);
-  const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
-  const [loadingFolders, setLoadingFolders] = useState(true);
+  const [folders, setFolders] = useState<Folder[]>(initialFolders);
+  const [loadingFolders, setLoadingFolders] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeDialog, setActiveDialog] = useState<DialogOption | null>(null);
-
-  useEffect(() => {
-    const loadFolders = async () => {
-      const { success, content } = await fetchSubFolders("My Folders");
-      if (success && content) {
-        setFolders(
-          content.map((f) => ({
-            id: f.folder_id,
-            name: f.folder_name,
-          }))
-        );
-      }
-      setLoadingFolders(false);
-    };
-
-    loadFolders();
-  }, []);
 
   const renderSidebarMenuButton = () => (
     <SidebarMenuItem>
@@ -162,7 +148,6 @@ export default function LeftSidebar() {
             }}
             folderMenuProps={{
               folders,
-              loadingFolders,
               onFoldersChange: setFolders,
             }}
           />

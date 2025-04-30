@@ -13,31 +13,31 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { renameFolder } from "@/app/actions";
+import { Folder } from "@/types/folder";
 
 interface RenameFolderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  folderId: string;
-  currentName: string;
+  folder: Folder;
   onSuccess: () => void;
 }
 
 export function RenameFolderDialog({
   open,
   onOpenChange,
-  folderId,
-  currentName,
+  folder,
   onSuccess,
 }: RenameFolderDialogProps) {
-  const [folderName, setFolderName] = useState(currentName);
+  const [folderName, setFolderName] = useState(folder.name);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedName = folderName.trim();
     setError(null);
-    const result = await renameFolder(folderId, trimmedName);
+    const result = await renameFolder(folder.id, trimmedName);
     if (result.success) {
+      folder.name = trimmedName;
       setFolderName("");
       onOpenChange(false);
       onSuccess();
@@ -52,7 +52,7 @@ export function RenameFolderDialog({
       onOpenChange={(open) => {
         if (!open) {
           setError(null);
-          setFolderName(currentName);
+          setFolderName(folder.name);
         }
         onOpenChange(open);
       }}
@@ -83,7 +83,10 @@ export function RenameFolderDialog({
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={!folderName.trim() || folderName === currentName}>
+            <Button
+              type="submit"
+              disabled={!folderName.trim() || folderName === folder.name}
+            >
               Rename folder
             </Button>
           </DialogFooter>
@@ -91,4 +94,4 @@ export function RenameFolderDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}

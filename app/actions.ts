@@ -18,6 +18,7 @@ import { fetchFolderIdUnderRoot } from "@/utils/folders/fetch-folde-id-under-roo
 import { folder } from "jszip";
 import { MaterialType } from "@/types/stugy-generator";
 
+
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
   const email = formData.get("email") as string;
@@ -626,9 +627,7 @@ export async function fetchUserFolders() {
     if (error) {
       throw new Error("Error fetching user's folders: ", error);
     }
-    const folders: { id: string; name: string }[] = data.map(
-      ({ user, ...rest }) => rest
-    );
+    const folders: Folder[] = data.map(({ user, ...rest }) => rest);
     return {
       success: true,
       message: "Success",

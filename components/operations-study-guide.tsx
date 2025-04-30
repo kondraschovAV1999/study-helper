@@ -6,15 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DialogOption } from "./left-sidebar";
+import { DialogOption } from "@/types/left-side-bar";
 import { JSX } from "react";
-import { StudyGuidePart } from "@/utils/ai/generate-study-guide";
-
-export type StudyGuide = {
-  id: string;
-  title: string;
-  content: StudyGuidePart[];
-};
+import { StudyGuide } from "@/types/study-guide";
 
 export default function OperationsStudyGuide({
   studyGuide,
