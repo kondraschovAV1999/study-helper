@@ -1,9 +1,11 @@
 import { Card } from "@/components/ui/card";
-import { RecentItem } from "@/data/mock-recents";
+
 import FlashcardsIcon from "@/components/flashcards-icon";
 import PracticeIcon from "@/components/practice-icon";
 import StudyGuideIcon from "@/components/study-guide-icon";
 import Link from "next/link";
+import { MaterialType } from "@/types/stugy-generator";
+import { RecentItem } from "@/types/recent";
 
 interface RecentsProps {
   items: RecentItem[];
@@ -11,27 +13,25 @@ interface RecentsProps {
 }
 
 export function Recents({ items, title = "Recents" }: RecentsProps) {
-  const getIcon = (type: RecentItem["type"]) => {
+  const getIcon = (type: MaterialType) => {
     switch (type) {
-      case "Flashcard set":
-        return <FlashcardsIcon/>;
-      case "Practice test":
-        return <PracticeIcon/>;
-      case "Study guide":
-        return <StudyGuideIcon />;
-      default:
+      case MaterialType.flashcards:
+        return <FlashcardsIcon />;
+      case MaterialType.practice_test:
+        return <PracticeIcon />;
+      case MaterialType.study_guide:
         return <StudyGuideIcon />;
     }
   };
 
   const getSubtitle = (item: RecentItem) => {
     switch (item.type) {
-      case "Flashcard set":
-        return `${item.type} • ${item.terms} terms`;
-      case "Practice test":
-        return `${item.type} • ${item.questions} questions`;
-      case "Study guide":
-        return item.type;
+      case MaterialType.flashcards:
+        return "Flashcard set";
+      case MaterialType.practice_test:
+        return "Practice test";
+      case MaterialType.study_guide:
+        return "Study guide";
       default:
         return "";
     }
@@ -39,12 +39,12 @@ export function Recents({ items, title = "Recents" }: RecentsProps) {
 
   const getItemUrl = (item: RecentItem) => {
     switch (item.type) {
-      case "Flashcard set":
-        return `/flashcards/${item.id}`;
-      case "Practice test":
-        return `/practice-tests/${item.id}`;
-      case "Study guide":
-        return `/study-guides/${item.id}`;
+      case MaterialType.flashcards:
+        return `protected/flashcards/${item.id}`;
+      case MaterialType.practice_test:
+        return `protected/practice-tests/${item.id}`;
+      case MaterialType.study_guide:
+        return `protected/study-guides/${item.id}`;
       default:
         return "#";
     }
@@ -55,8 +55,8 @@ export function Recents({ items, title = "Recents" }: RecentsProps) {
       <h2 className="text-xl font-semibold mb-4">{title}</h2>
       <div className="grid grid-cols-2 gap-4">
         {items.map((item) => (
-          <Link 
-            key={item.id} 
+          <Link
+            key={item.id}
             href={getItemUrl(item)}
             className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
           >
