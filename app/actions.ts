@@ -13,7 +13,11 @@ import { createFlashcardSet } from "@/utils/ai/generate-flashcards";
 import storeFile from "@/utils/file/store-file";
 import { v4 as uuidv4 } from "uuid";
 import deleteFromStorage from "@/utils/file/delete-from-storage";
-import { Folder, FolderInFolder } from "@/types/folder";
+import { FolderInFolder } from "@/types/folder";
+import { fetchFolderIdUnderRoot } from "@/utils/folders/fetch-folde-id-under-root";
+import { folder } from "jszip";
+import { MaterialType } from "@/types/stugy-generator";
+
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createClient();
@@ -631,6 +635,63 @@ export async function fetchUserFolders() {
     };
   } catch (error) {
     console.error(error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+      content: [],
+    };
+  }
+}
+
+export async function fetchRecents() {
+  const supabase = await createClient();
+  const STUDY_GUIDES_FOLDER = "Study Guides";
+  const FLASHCARDS_FOLDER = "Flashcards";
+  const QUIZZES_FOLDER = "Quizzes";
+  try {
+    const studyGuidesFolderId =
+      await fetchFolderIdUnderRoot(STUDY_GUIDES_FOLDER);
+    const flashcardsFolderId = await fetchFolderIdUnderRoot(FLASHCARDS_FOLDER);
+    const quizzesFolderId = await fetchFolderIdUnderRoot(QUIZZES_FOLDER);
+
+    const { data, error } = await supabase
+      .from("folder")
+      .select(
+        `
+      id,
+      set (id, title),
+      study_guide(id, title)
+      `
+      )
+      .in("id", [studyGuidesFolderId, flashcardsFolderId, quizzesFolderId]);
+
+    if (error) throw new Error(error.message);
+    const result = data?.reduce(
+      (acc: { type: MaterialType; id: string; title: string }[], folder) => {
+        const items =
+          folder.id === studyGuidesFolderId
+            ? folder.study_guide.map((sg: { id: string; title: string }) => ({
+                ...sg,
+                type: MaterialType.study_guide,
+              }))
+            : folder.set.map((item: { id: string; title: string }) => ({
+                ...item,
+                type:
+                  folder.id === flashcardsFolderId
+                    ? MaterialType.flashcards
+                    : MaterialType.practice_test,
+              }));
+        return acc.concat(items);
+      },
+      []
+    );
+    return {
+      success: true,
+      message: "Successfuly retrived objects from folders",
+      content: result,
+    };
+  } catch (error) {
+    console.log(error);
     return {
       success: false,
       message: error instanceof Error ? error.message : "Unknown error",

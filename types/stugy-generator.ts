@@ -1,5 +1,5 @@
 export enum MaterialType {
-    flashcards = "flashcards",
-    practice_test = "practice-test",
-    study_guide = "study-guide",
-  }
+  flashcards = "flashcards",
+  practice_test = "practice-test",
+  study_guide = "study-guide",
+}

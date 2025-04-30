@@ -4,11 +4,11 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Recents } from "@/components/recents";
 import { mockRecentItems } from "@/data/mock-recents";
 import { StudyGenerator } from "@/components/study-generator";
-import { fetchUserFolders } from "../actions";
+import { fetchRecents, fetchUserFolders } from "../actions";
 
 export default async function ProtectedPage() {
   const { content: folders } = await fetchUserFolders();
-
+  const { success, content } = await fetchRecents();
   return (
     <div className="min-h-screen bg-background">
       <LandingHeader isProtectedPage={true} />
@@ -32,7 +32,7 @@ export default async function ProtectedPage() {
 
               {mockRecentItems.length > 0 && (
                 <div className="mb-8">
-                  <Recents items={mockRecentItems} title="Recents" />
+                  <Recents items={content} title="Recents" />
                 </div>
               )}
             </div>
