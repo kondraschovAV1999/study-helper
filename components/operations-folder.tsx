@@ -8,11 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DialogOption } from "@/types/left-side-bar";
 import { JSX } from "react";
-
-export type Folder = {
-  id: string;
-  name: string;
-};
+import { Folder } from "@/types/folder";
 
 export default function OperationsFolder({
   folder,
