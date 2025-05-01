@@ -3,11 +3,11 @@ import LeftSidebar from "@/components/left-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default async function FolderLayout({
-  children,
   left_side_bar,
+  folder,
 }: Readonly<{
-  children: React.ReactNode;
   left_side_bar: React.ReactNode;
+  folder: React.ReactNode;
 }>) {
   return (
     <div className="min-h-screen bg-background">
@@ -21,7 +21,7 @@ export default async function FolderLayout({
         }
       >
         {left_side_bar}
-        {children}
+        {folder}
       </SidebarProvider>
     </div>
   );
