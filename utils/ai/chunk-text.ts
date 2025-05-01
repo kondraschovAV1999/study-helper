@@ -2,12 +2,12 @@
  * Splits a given text into smaller chunks, each containing up to a specified maximum number of words.
  *
  * @param {string} text - The input text to be chunked.
- * @param {number} [maxWords=3000] - The maximum number of words per chunk.
+ * @param {number} [maxWords=5000] - The maximum number of words per chunk.
  * @returns {string[]} An array of text chunks, each containing up to the specified number of words.
  */
 export default function chunkText(
   text: string,
-  maxWords: number = 3000
+  maxWords: number = 5000
 ): string[] {
   if (!text) return [];
   if (maxWords <= 0) throw new Error("maxWords must be greater than 0");
