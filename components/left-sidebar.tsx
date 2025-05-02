@@ -38,7 +38,7 @@ const sidebarMenus = {
         component: "nav",
         item: {
           title: "My library",
-          href: "#",
+          href: "/protected/library",
           icon: FolderOpen,
         },
       },
