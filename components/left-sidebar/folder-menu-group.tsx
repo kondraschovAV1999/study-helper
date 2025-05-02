@@ -2,15 +2,15 @@ import { MoreVertical, Trash2, Loader2 } from "lucide-react";
 import { Folder as FolderIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { createFolder } from "../app/actions";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { RenameFolderDialog } from "./rename-folder-dialog";
-import { DeleteFolderDialog } from "./delete-folder-dialog";
+import { RenameFolderDialog } from "../folder/rename-folder-dialog";
+import { DeleteFolderDialog } from "../folder/delete-folder-dialog";
 
 import {
   Sidebar,
@@ -21,12 +21,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import NavComponent from "./nav-component";
-import ActionComponent from "./action-component";
+import NavComponent from "../utils/nav-component";
+import ActionComponent from "../utils/action-component";
 import { NavItem, ActionItem, DialogOption } from "@/types/left-side-bar";
-import { CreateFolderDialog } from "./create-folder-dialog";
+import { CreateFolderDialog } from "../folder/create-folder-dialog";
 import { SidebarMenuProps } from "./side-bar-menu-group";
 import { Folder } from "@/types/folder";
+import { createFolder } from "@/utils/folders/actions/create-folder";
 
 export interface FolderMenuProps {
   folders: { id: string; name: string }[];

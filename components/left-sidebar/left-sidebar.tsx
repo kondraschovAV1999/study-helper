@@ -1,9 +1,9 @@
 "use client";
 
 import { FolderOpen, Home, Plus, Book, Menu } from "lucide-react";
-import FlashcardsIcon from "@/components/flashcards-icon";
-import PracticeIcon from "@/components/practice-icon";
-import StudyGuideIcon from "@/components/study-guide-icon";
+import FlashcardsIcon from "@/components/icons/flashcards-icon";
+import PracticeIcon from "@/components/icons/practice-icon";
+import StudyGuideIcon from "@/components/icons/study-guide-icon";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useState, useEffect } from "react";
 import { DialogOption, MenuItem } from "@/types/left-side-bar";

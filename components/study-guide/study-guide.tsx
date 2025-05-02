@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { Ellipsis } from "lucide-react";
 import { useState } from "react";
 import { StudyGuide } from "@/types/study-guide";

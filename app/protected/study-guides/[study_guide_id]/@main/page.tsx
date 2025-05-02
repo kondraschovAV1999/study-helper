@@ -1,7 +1,5 @@
-import { fetchStudyGuide } from "@/app/actions";
-import StudyGuideComponent from "@/components/study-guide";
-import { mock_study_guide } from "@/data/mock-study-guide";
-import { StudyGuide, StudyGuidePart } from "@/types/study-guide";
+import StudyGuideComponent from "@/components/study-guide/study-guide";
+import { fetchStudyGuide } from "@/utils/study-guide/actions/fetch-study-guide";
 
 export default async function StudyGuidePage({
   params,

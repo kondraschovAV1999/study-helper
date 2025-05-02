@@ -1,10 +1,11 @@
-import { LandingHeader } from "@/components/landing-header";
-import LeftSidebar from "@/components/left-sidebar";
+import { LandingHeader } from "@/components/landing-header/landing-header";
+import LeftSidebar from "@/components/left-sidebar/left-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Recents } from "@/components/recents";
+import { Recents } from "@/components/utils/recents";
 import { mockRecentItems } from "@/data/mock-recents";
-import { StudyGenerator } from "@/components/study-generator";
-import { fetchRecents, fetchUserFolders } from "../actions";
+import { StudyGenerator } from "@/components/study-guide/study-generator";
+import { fetchRecents } from "@/utils/general/fetch-recents";
+import { fetchUserFolders } from "@/utils/folders/actions/fetch-user-folders";
 
 export default async function ProtectedPage() {
   const { content: folders } = await fetchUserFolders();

@@ -9,14 +9,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Plus } from "lucide-react";
-import FlashcardsIcon from "@/components/flashcards-icon";
-import PracticeIcon from "@/components/practice-icon";
-import StudyGuideIcon from "@/components/study-guide-icon";
+import FlashcardsIcon from "@/components/icons/flashcards-icon";
+import PracticeIcon from "@/components/icons/practice-icon";
+import StudyGuideIcon from "@/components/icons/study-guide-icon";
 import { MenuItem, NavItem, ActionItem } from "@/types/left-side-bar";
 import NavComponent from "./nav-component";
-import ActionComponent from "./action-component";
+
 import { redirect } from "next/navigation";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
+import ActionComponent from "./action-component";
 
 const menuItems = [
   {

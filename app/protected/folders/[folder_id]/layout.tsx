@@ -1,5 +1,4 @@
-import { LandingHeader } from "@/components/landing-header";
-import LeftSidebar from "@/components/left-sidebar";
+import { LandingHeader } from "@/components/landing-header/landing-header";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default async function FolderLayout({

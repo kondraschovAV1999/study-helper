@@ -12,8 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { renameFolder } from "@/app/actions";
+
 import { Folder } from "@/types/folder";
+import { renameFolder } from "@/utils/folders/actions/rename-folder";
 
 interface RenameFolderDialogProps {
   open: boolean;

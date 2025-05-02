@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Ellipsis, Link } from "lucide-react";
 import { useState, useEffect } from "react";
 import { DialogOption } from "@/types/left-side-bar";
-import OperationsFolder from "@/components/operations-folder";
-import { RenameFolderDialog } from "@/components/rename-folder-dialog";
-import { DeleteFolderDialog } from "@/components/delete-folder-dialog";
-import CreateDropdown from "@/components/create-menu";
+import OperationsFolder from "@/components/folder/operations-folder";
+import { RenameFolderDialog } from "@/components/folder/rename-folder-dialog";
+import { DeleteFolderDialog } from "@/components/folder/delete-folder-dialog";
+import CreateDropdown from "@/components/utils/create-menu";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Folder } from "@/types/folder";
 
-import { Recents } from "@/components/recents";
+import { Recents } from "@/components/utils/recents";
 import { RecentItem } from "@/types/recent";
 
 export default function FolderComponent({

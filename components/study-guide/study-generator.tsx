@@ -11,9 +11,10 @@ import {
 } from "@/components/ui/select";
 import { BookOpen, ListChecks, FileText, Upload, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Input } from "./ui/input";
-import { createStudyGuide } from "@/app/actions";
+
 import { MaterialType } from "@/types/stugy-generator";
+import { createStudyGuide } from "@/utils/study-guide/actions/create-study-guide";
+import { Input } from "@/components/ui/input";
 
 export function StudyGenerator({
   folders,
@@ -76,7 +77,7 @@ export function StudyGenerator({
           >
             <SelectTrigger>
               <SelectValue asChild>
-                <div className="flex items-center gap-2">
+                <span className="flex items-center gap-2">
                   {materialType === MaterialType.flashcards && (
                     <FileText className="h-4 w-4" />
                   )}
@@ -93,7 +94,7 @@ export function StudyGenerator({
                       "Practice Test"}
                     {materialType === MaterialType.study_guide && "Study Guide"}
                   </span>
-                </div>
+                </span>
               </SelectValue>
             </SelectTrigger>
             <SelectContent>

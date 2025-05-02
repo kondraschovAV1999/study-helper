@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import CreateDropdown from "@/components/create-menu";
-import { createClient } from "../utils/supabase/server";
+import CreateDropdown from "@/components/utils/create-menu";
+import { createClient } from "../../utils/supabase/server";
 import { signOutAction } from "@/app/actions";
-import { redirect } from "next/navigation";
 
 export async function LandingHeader({ isProtectedPage = false}: { isProtectedPage?: boolean }) {
   const supabase = await createClient();

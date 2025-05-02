@@ -10,7 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteFolder } from "@/app/actions";
+import { deleteFolder } from "@/utils/folders/actions/delete-folder";
+
 
 interface DeleteFolderDialogProps {
   open: boolean;

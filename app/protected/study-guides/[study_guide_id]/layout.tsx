@@ -1,4 +1,4 @@
-import { LandingHeader } from "@/components/landing-header";
+import { LandingHeader } from "@/components/landing-header/landing-header";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import React from "react";
 

@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
 
-import FlashcardsIcon from "@/components/flashcards-icon";
-import PracticeIcon from "@/components/practice-icon";
-import StudyGuideIcon from "@/components/study-guide-icon";
+import FlashcardsIcon from "@/components/icons/flashcards-icon";
+import PracticeIcon from "@/components/icons/practice-icon";
+import StudyGuideIcon from "@/components/icons/study-guide-icon";
 import Link from "next/link";
 import { MaterialType } from "@/types/stugy-generator";
 import { RecentItem } from "@/types/recent";

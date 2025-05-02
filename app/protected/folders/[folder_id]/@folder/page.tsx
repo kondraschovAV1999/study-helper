@@ -1,5 +1,5 @@
-import { fetchFolder } from "@/app/actions";
-import FolderComponent from "@/components/folder";
+import FolderComponent from "@/components/folder/folder";
+import { fetchFolder } from "@/utils/folders/actions/fetch-folder";
 
 export default async function FolderPage({
   params,

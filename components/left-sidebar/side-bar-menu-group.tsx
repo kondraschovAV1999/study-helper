@@ -1,6 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { FlashcardDialog } from "./flashcard-dialog";
+import { FlashcardDialog } from "../flashcard/flashcard-dialog";
 
 import {
   Sidebar,
@@ -11,8 +11,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import NavComponent from "./nav-component";
-import ActionComponent from "./action-component";
+import NavComponent from "../utils/nav-component";
+import ActionComponent from "../utils/action-component";
 import { DialogProps } from "./folder-menu-group";
 import {
   ActionItem,
