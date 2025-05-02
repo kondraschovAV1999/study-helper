@@ -1,13 +1,14 @@
 import { LandingHeader } from "@/components/landing-header/landing-header";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import React from "react";
 
-export default async function FolderLayout({
-  left_side_bar,
-  folder,
-}: Readonly<{
-  left_side_bar: React.ReactNode;
-  folder: React.ReactNode;
-}>) {
+export default async function RootLayout({
+  left_sidebar,
+  children,
+}: {
+  left_sidebar: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen bg-background">
       <LandingHeader isProtectedPage={true} />
@@ -19,8 +20,11 @@ export default async function FolderLayout({
           } as React.CSSProperties
         }
       >
-        {left_side_bar}
-        {folder}
+        {left_sidebar}
+
+        <main className="container mx-auto p-4 flex-1 flex flex-col">
+          {children}
+        </main>
       </SidebarProvider>
     </div>
   );
