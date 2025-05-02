@@ -1,9 +1,10 @@
 "use client";
 import { Button } from "./ui/button";
 import { Ellipsis } from "lucide-react";
-import OperationsStudyGuide, { StudyGuide } from "./operations-study-guide";
-import { DialogOption } from "./left-sidebar";
 import { useState } from "react";
+import { StudyGuide } from "@/types/study-guide";
+import { DialogOption } from "@/types/left-side-bar";
+import OperationsStudyGuide from "./operations-study-guide";
 
 export default function StudyGuideComponent({
   studyGuide,
@@ -43,12 +44,16 @@ export default function StudyGuideComponent({
                 ))}
               </ul>
               <div>
-                <strong>Examples:</strong>
-                <ul className="list-disc list-inside">
-                  {part.examples.map((example, i) => (
-                    <li key={i}>{example}</li>
-                  ))}
-                </ul>
+                {part.examples.length > 0 && (
+                  <>
+                    <strong>Examples:</strong>
+                    <ul className="list-disc list-inside">
+                      {part.examples.map((example, i) => (
+                        <li key={i}>{example}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </div>
             </div>
           ))}

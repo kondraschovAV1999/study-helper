@@ -765,7 +765,7 @@ export async function fetchFolder(id: string, parent_id?: string) {
       },
     };
   }
-}        
+}
 export async function fetchStudyGuide(id: string) {
   const supabase = await createClient();
   try {
@@ -808,9 +808,9 @@ export async function fetchStudyGuide(id: string) {
       message: errorMessage,
       content: {
         id,
-        errorMessage,
-        content: [],
-      },
+        title: "",
+        content: [] as StudyGuidePart[],
+      } as StudyGuide,
     };
   }
 }

@@ -40,11 +40,11 @@ export function Recents({ items, title = "Recents" }: RecentsProps) {
   const getItemUrl = (item: RecentItem) => {
     switch (item.type) {
       case MaterialType.flashcards:
-        return `protected/flashcards/${item.id}`;
+        return `/protected/flashcards/${item.id}`;
       case MaterialType.practice_test:
-        return `protected/practice-tests/${item.id}`;
+        return `/protected/practice-tests/${item.id}`;
       case MaterialType.study_guide:
-        return `protected/study-guides/${item.id}`;
+        return `/protected/study-guides/${item.id}`;
       default:
         return "#";
     }
