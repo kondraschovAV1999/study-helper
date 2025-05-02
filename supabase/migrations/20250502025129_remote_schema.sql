@@ -12,6 +12,13 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 
+CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
+
+
+
+
+
+
 CREATE EXTENSION IF NOT EXISTS "pgsodium";
 
 
@@ -158,6 +165,55 @@ end;$$;
 
 ALTER FUNCTION "public"."create_file"("p_file_id" "uuid", "p_is_ai_generated" boolean, "p_user_id" "uuid", "p_file_name" "text", "p_folder_id" "uuid") OWNER TO "postgres";
 
+
+CREATE OR REPLACE FUNCTION "public"."create_flashcard_set"("set_title" "text", "flashcards" "jsonb"[], "p_folder_id" "uuid", "p_study_guide_id" "uuid") RETURNS "uuid"
+    LANGUAGE "plpgsql"
+    AS $$declare new_set_id UUID;
+
+fc JSONB;
+
+curr_user_id UUID;
+
+s_type set_type := 'flashcards';
+
+begin curr_user_id := fetch_current_user_id ();
+
+if curr_user_id is null then raise exception 'Unauthorized: user must be authenticated';
+
+end if;
+
+if p_folder_id is null then p_folder_id := get_folder_id_under_root ('Flashcards');
+
+end if;
+
+insert into
+  "set" (title, user_id, folder_id, study_guide_id, type)
+values
+  (
+    set_title,
+    curr_user_id,
+    p_folder_id,
+    p_study_guide_id,
+    s_type
+  )
+returning
+  id into new_set_id;
+
+FOREACH fc in ARRAY flashcards LOOP
+insert into
+  flashcard (set_id, question, answer)
+values
+  (new_set_id, fc ->> 'question', fc ->> 'answer');
+
+end LOOP;
+
+RETURN new_set_id;
+
+end;$$;
+
+
+ALTER FUNCTION "public"."create_flashcard_set"("set_title" "text", "flashcards" "jsonb"[], "p_folder_id" "uuid", "p_study_guide_id" "uuid") OWNER TO "postgres";
+
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
@@ -300,6 +356,50 @@ $$;
 ALTER FUNCTION "public"."get_folder_id_under_root"("target_folder_name" "text") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."get_gen_file"("p_study_guide_id" "uuid") RETURNS TABLE("name" "text", "bucket" "text")
+    LANGUAGE "plpgsql"
+    AS $$BEGIN
+  RETURN QUERY
+  SELECT
+    so1.name as name,
+    so1.bucket_id as bucket
+  FROM
+    study_guide sg
+  LEFT JOIN
+    file f1 ON sg.gen_file_id = f1.id
+  LEFT JOIN
+    storage.objects so1 ON f1.file_id = so1.id
+  WHERE
+    sg.id = p_study_guide_id;
+END;$$;
+
+
+ALTER FUNCTION "public"."get_gen_file"("p_study_guide_id" "uuid") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_orig_file"("p_study_guide_id" "uuid") RETURNS TABLE("name" "text", "bucket" "text")
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    so1.name as name,
+    so1.bucket_id as bucket
+  FROM 
+    study_guide sg
+  LEFT JOIN 
+    file f1 ON sg.orig_file_id = f1.id
+  LEFT JOIN 
+    storage.objects so1 ON f1.file_id = so1.id
+  WHERE
+    sg.id = p_study_guide_id;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_orig_file"("p_study_guide_id" "uuid") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$declare 
@@ -323,6 +423,7 @@ end;$$;
 
 
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
+
 
 
 CREATE TABLE IF NOT EXISTS "public"."file" (
@@ -677,12 +778,6 @@ ALTER TABLE "public"."user" ENABLE ROW LEVEL SECURITY;
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
-CREATE ROLE "vachanabk";
-CREATE ROLE "kated";
-CREATE ROLE "andreik";
-CREATE ROLE "aravinds";
-CREATE ROLE "pablor";
-
 
 GRANT USAGE ON SCHEMA "public" TO "postgres";
 GRANT USAGE ON SCHEMA "public" TO "anon";
@@ -693,6 +788,12 @@ GRANT ALL ON SCHEMA "public" TO "kated";
 GRANT ALL ON SCHEMA "public" TO "andreik";
 GRANT ALL ON SCHEMA "public" TO "aravinds";
 GRANT ALL ON SCHEMA "public" TO "pablor";
+
+
+
+
+
+
 
 
 
@@ -885,6 +986,12 @@ GRANT ALL ON FUNCTION "public"."create_file"("p_file_id" "uuid", "p_is_ai_genera
 
 
 
+GRANT ALL ON FUNCTION "public"."create_flashcard_set"("set_title" "text", "flashcards" "jsonb"[], "p_folder_id" "uuid", "p_study_guide_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."create_flashcard_set"("set_title" "text", "flashcards" "jsonb"[], "p_folder_id" "uuid", "p_study_guide_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."create_flashcard_set"("set_title" "text", "flashcards" "jsonb"[], "p_folder_id" "uuid", "p_study_guide_id" "uuid") TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."folder_in_folder" TO "anon";
 GRANT ALL ON TABLE "public"."folder_in_folder" TO "authenticated";
 GRANT ALL ON TABLE "public"."folder_in_folder" TO "service_role";
@@ -917,6 +1024,18 @@ GRANT ALL ON FUNCTION "public"."fetch_current_user_id"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."get_folder_id_under_root"("target_folder_name" "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."get_folder_id_under_root"("target_folder_name" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_folder_id_under_root"("target_folder_name" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_gen_file"("p_study_guide_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_gen_file"("p_study_guide_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_gen_file"("p_study_guide_id" "uuid") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_orig_file"("p_study_guide_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_orig_file"("p_study_guide_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_orig_file"("p_study_guide_id" "uuid") TO "service_role";
 
 
 
@@ -1101,3 +1220,8 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT SELECT ON 
 
 
 RESET ALL;
+
+--
+-- Dumped schema changes for auth and storage
+--
+
