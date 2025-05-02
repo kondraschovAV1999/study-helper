@@ -12,6 +12,13 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 
+CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
+
+
+
+
+
+
 CREATE EXTENSION IF NOT EXISTS "pgsodium";
 
 
@@ -418,6 +425,7 @@ end;$$;
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
 
 
+
 CREATE TABLE IF NOT EXISTS "public"."file" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "isAIgenerated" boolean DEFAULT false NOT NULL,
@@ -770,6 +778,7 @@ ALTER TABLE "public"."user" ENABLE ROW LEVEL SECURITY;
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
+
 GRANT USAGE ON SCHEMA "public" TO "postgres";
 GRANT USAGE ON SCHEMA "public" TO "anon";
 GRANT USAGE ON SCHEMA "public" TO "authenticated";
@@ -779,6 +788,12 @@ GRANT ALL ON SCHEMA "public" TO "kated";
 GRANT ALL ON SCHEMA "public" TO "andreik";
 GRANT ALL ON SCHEMA "public" TO "aravinds";
 GRANT ALL ON SCHEMA "public" TO "pablor";
+
+
+
+
+
+
 
 
 
@@ -1205,3 +1220,8 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT SELECT ON 
 
 
 RESET ALL;
+
+--
+-- Dumped schema changes for auth and storage
+--
+

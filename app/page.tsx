@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { BookOpen, FileText, ClipboardList, Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LandingHeader } from "@/components/landing-header"
-import { FeatureCard } from "@/components/feature-card";
+import { LandingHeader } from "@/components/landing-header/landing-header"
+import { FeatureCard } from "@/components/utils/feature-card";
 
 const FEATURES = [
   {
