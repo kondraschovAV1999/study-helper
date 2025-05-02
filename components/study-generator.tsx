@@ -47,6 +47,7 @@ export function StudyGenerator({
       title,
       formFile: selectedFile,
       inputText,
+      folderId: selectedFolderId,
     });
     setIsLoading(false);
     if (!success) {
