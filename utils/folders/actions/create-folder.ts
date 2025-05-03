@@ -23,10 +23,7 @@ export async function createFolder(
     parent_id = data;
   }
 
-  const {
-    data: { folder_name: returned_name, folder_id },
-    error,
-  } = await supabase.rpc("create_folder", {
+  const { data, error } = await supabase.rpc("create_folder", {
     folder_name,
     parent_id,
   });
@@ -46,8 +43,8 @@ export async function createFolder(
       content: null,
     };
   }
-  const id = folder_id as string;
-  const name = returned_name as string;
+  const id = data?.folder_id as string;
+  const name = data?.folder_name as string;
 
   return {
     success: true,
