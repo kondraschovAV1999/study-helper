@@ -35,7 +35,8 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
   },
-  globalTeardown: 'tests/e2e/global-teardown.ts',
+  globalTeardown: "tests/e2e/global-teardown.ts",
+  globalSetup: 'tests/e2e/global-setup.ts',
 
   /* Configure projects for major browsers */
   projects: [
@@ -52,7 +53,7 @@ export default defineConfig({
     {
       name: "webkit",
       use: { ...devices["Desktop Safari"] },
-    },
+    }
 
     /* Test against mobile viewports. */
     // {
