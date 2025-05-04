@@ -8,7 +8,7 @@ export async function signUpUser(
     birthDay: birthMonth = "1",
     birthDay = "1",
     birthYear = "2000",
-    email = `testuser+${Date.now()}@example.com`,
+    email = `testuser${Date.now()}@example.com`,
     password = "password123",
     confirmPassword = "password123",
   }: {
