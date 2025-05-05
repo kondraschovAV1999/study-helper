@@ -36,7 +36,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   globalTeardown: "tests/e2e/global-teardown.ts",
-  globalSetup: 'tests/e2e/global-setup.ts',
+  globalSetup: "tests/e2e/global-setup.ts",
 
   /* Configure projects for major browsers */
   projects: [
@@ -47,13 +47,22 @@ export default defineConfig({
 
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      use: {
+        ...devices["Desktop Firefox"],
+        launchOptions: {
+          // args: ["--disable-gpu"], // Disable GPU acceleration
+          slowMo: 500,
+        },
+        actionTimeout: 15000,
+      },
+      // fullyParallel: false,
     },
 
     {
       name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    }
+      use: { ...devices["Desktop Safari"], actionTimeout: 15000 },
+      // fullyParallel: false,
+    },
 
     /* Test against mobile viewports. */
     // {
