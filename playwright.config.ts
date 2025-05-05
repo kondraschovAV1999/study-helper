@@ -55,13 +55,12 @@ export default defineConfig({
         },
         actionTimeout: 15000,
       },
-      // fullyParallel: false,
+
     },
 
     {
       name: "webkit",
       use: { ...devices["Desktop Safari"], actionTimeout: 15000 },
-      // fullyParallel: false,
     },
 
     /* Test against mobile viewports. */

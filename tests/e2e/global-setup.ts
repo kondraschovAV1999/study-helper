@@ -4,7 +4,7 @@ import { testUsers, User } from "../utils/seeds";
 export default async function setUp() {
   console.log("Global setup");
   const user: User =
-    testUsers.get("confirmedEmail") ??
+    testUsers.get("unconfirmedEmail") ??
     (() => {
       throw new Error("User 'confirmedEmail' not found");
     })();
