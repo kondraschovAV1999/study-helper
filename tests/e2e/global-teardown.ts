@@ -1,4 +1,4 @@
-/* import { supabaseAdmin } from "../utils/supabase-client";
+import { supabaseAdmin } from "../utils/supabase-client";
 import { deleteUser } from "../utils/helper-functions";
 
 export default async function cleanUpUsesrs() {
@@ -13,4 +13,3 @@ export default async function cleanUpUsesrs() {
   await Promise.all(deletionPromises);
   console.log("Deleted all created users");
 }
- */
