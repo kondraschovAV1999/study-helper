@@ -13,7 +13,7 @@ export async function createUser(user: {
   return data.user?.id!;
 }
 
-export async function deleteUser(userId: string ) {
+export async function deleteUser(userId: string) {
   const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
   if (error) {

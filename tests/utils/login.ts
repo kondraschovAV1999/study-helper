@@ -6,7 +6,10 @@ export async function login(page: Page, user: User) {
     await page.goto("/login");
     await page.getByPlaceholder("Enter your email address").fill(user.email);
     await page.getByPlaceholder("Enter your password").fill(user.password);
-    await page.getByRole("button", { name: "Sign In" }).nth(1).click();
+    await page
+      .getByRole("button", { name: "Sign In" })
+      .nth(1)
+      .click({ force: true });
   });
 
   await test.step("Verify successful login", async () => {
