@@ -25,6 +25,7 @@ export async function deleteUser(userId: string) {
   }
 }
 
+
 export async function signUp(page: Page, testInfo: TestInfo, password: string) {
   const email = `${testInfo.parallelIndex}-${randomUUID()}@example.com`;
   await signUpUser(page, {

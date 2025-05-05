@@ -55,6 +55,7 @@ export default defineConfig({
         },
         actionTimeout: 15000,
       },
+
     },
 
     {

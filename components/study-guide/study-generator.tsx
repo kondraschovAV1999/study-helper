@@ -76,7 +76,7 @@ export function StudyGenerator({
             onValueChange={(value: MaterialType) => setMaterialType(value)}
           >
             <SelectTrigger>
-              <SelectValue asChild>
+              <SelectValue>
                 <span className="flex items-center gap-2">
                   {materialType === MaterialType.flashcards && (
                     <FileText className="h-4 w-4" />
