@@ -1,5 +1,6 @@
 // app/auth/page.tsx
-import { RightSideAuthForm } from "@/components/right-side-auth-form";
+
+import { RightSideAuthForm } from "@/components/auth/right-side-auth-form";
 
 export default function LoginPage({
   searchParams,

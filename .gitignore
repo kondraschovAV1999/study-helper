@@ -30,6 +30,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env.test
 .env*.local
 .env
 
@@ -39,3 +40,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+.vscode/extensions.json
+.vscode/settings.json

@@ -13,10 +13,10 @@ export function RightSideAuthForm() {
     //this is the container for the entire form, including the toggle buttons and the form itself.
     <div className="w-full max-w-xl">
       {/* Toggle Switches */}
-      <div className="flex justify-center space-x-20 mb-10">
+      <div className="flex justify-center space-x-10 mb-10">
         <button
           onClick={() => setActiveForm('signin')}
-          className={`w-48 py-3 text-lg font-medium rounded-lg transition-all ${
+          className={`w-48 py-2 text-lg font-medium rounded-lg transition-all ${
             activeForm === 'signin'
               ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90'
               : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -26,7 +26,7 @@ export function RightSideAuthForm() {
         </button>
         <button
           onClick={() => setActiveForm('signup')}
-          className={`w-48 py-3 text-lg font-medium rounded-lg transition-all ${
+          className={`w-48 py-2 text-lg font-medium rounded-lg transition-all ${
             activeForm === 'signup'
               ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90'
               : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
